@@ -36,37 +36,49 @@ Support for more ADEs is planned for the immediate future.
 - Native Windows tray controls and login startup
 - Local-first tracking of usage and activity
 
-<p align="center">
-  <img src="assets/punchcard-mini-dashboard.png" width="368" alt="Punchcard mini dashboard on Windows">
-</p>
-
 ## Commands
 
 | Command | Description |
 | --- | --- |
-| `punchcard status` | View the current connection, agent, and usage status |
+| `punchcard on` | Enable and start Punchcard |
+| `punchcard off` | Stop Punchcard and remove its startup entry and Claude hooks |
+| `punchcard quit` | Close Punchcard without changing the Start with Windows setting |
+| `punchcard toggle` | Switch Punchcard on or off |
 | `punchcard connect` | Open Discord if needed and reconnect Punchcard |
+| `punchcard status` | View the current connection, agent, and usage status |
+| `punchcard doctor` | Print diagnostic status information |
+| `punchcard restart` | Restart the daemon and tray |
 | `punchcard tray --show` | Open the Windows mini dashboard |
-| `punchcard off` | Stop Punchcard and disable automatic startup |
+| `punchcard startup <on\|off\|status>` | Manage Start with Windows |
+| `punchcard auto-update <on\|off\|status>` | Manage automatic updates |
+| `punchcard display status` | Show all Discord display settings |
+| `punchcard display <agents\|daily\|weekly> <on\|off\|status>` | Manage the agent count and token totals shown in Discord |
+| `punchcard more-metrics <on\|off\|status>` | Manage the optional Advanced Metrics extension from the CLI |
+| `punchcard profile [--base-url URL]` | View the profile status or configure its host |
+| `punchcard update-check` | Check for a newer version |
+| `punchcard update` | Install the newest available version |
+| `punchcard app [--id ID]` | View or change the Discord application ID |
+| `punchcard --version` | Print the installed version |
+| `punchcard help` | Show command-line help |
+
+Add `--json` to `connect`, `status`, `display`, `more-metrics`, `profile`, or `update-check` for machine-readable output.
 
 ## Advanced Metrics
 
 Advanced Metrics is optional, disabled by default, and distributed separately from the core presence package.
 
-```sh
-punchcard more-metrics on
-```
+Open the Punchcard mini dashboard from the Windows tray and click the **More Metrics** checkbox highlighted below.
 
-Enabling it installs [`punchcard-advanced-metrics`](https://www.npmjs.com/package/punchcard-advanced-metrics) into Punchcard's managed extensions directory. The companion package is maintained separately and is not part of this repository.
+<p align="center">
+  <img src="assets/punchcard-mini-dashboard.png" width="368" alt="More Metrics checkbox highlighted in the Punchcard mini dashboard">
+</p>
+
+Punchcard installs [`punchcard-advanced-metrics`](https://www.npmjs.com/package/punchcard-advanced-metrics) in the background. Once connected, click **View profile** to open your dashboard. The companion package is maintained separately and is not part of this repository.
 
 <p align="center">
   <img src="assets/punchcard-advanced-metrics.png" width="1000" alt="Punchcard Advanced Metrics dashboard">
 </p>
 
-Disable it at any time with:
-
-```sh
-punchcard more-metrics off
-```
+To disable Advanced Metrics, clear the **More Metrics** checkbox in the mini dashboard.
 
 Punchcard is independent and is not affiliated with Anthropic, OpenAI, or Discord. Released under the [MIT License](LICENSE).

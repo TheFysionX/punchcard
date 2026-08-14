@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1
+
+- More Metrics now uploads signed, content-free daily aggregates to Punchcard's Cloudflare D1 backend.
+- Removed the local historical metrics snapshot; only cursors, signing state, and one retry batch remain locally.
+- Added the default public profile at the deployed Punchcard Cloudflare Worker.
+- Updated the optional metrics dependency to `punchcard-advanced-metrics@1.0.0`.
+
 All notable Punchcard changes are documented here. The project follows [Semantic Versioning](https://semver.org/).
 
 ## [1.0.0] - 2026-08-13

@@ -19,7 +19,7 @@ Parsing a JSONL record necessarily loads that local record in memory, but Punchc
 By default Punchcard writes under `~/.claude-codex-presence`:
 
 - `settings.json`: user preferences and Discord application ID.
-- `status.json`: the latest aggregate status and token totals. When More Metrics is enabled, it also holds the public Discord username/display name used for the optional profile link.
+- `status.json`: the latest aggregate status and token totals. When More Metrics is enabled, it also holds the Discord user ID, username, and display name used to bind uploads to the correct profile.
 - PID files for the daemon and Windows tray.
 - Small Claude activity markers, removed when work stops or becomes stale.
 - Update and optional-extension status files.
@@ -27,7 +27,7 @@ By default Punchcard writes under `~/.claude-codex-presence`:
 
 Each error log is capped at 256 KiB and keeps at most one tail backup capped at 128 KiB. Status and settings files are overwritten rather than appended. Punchcard does not create a historical database of prompts or presence updates.
 
-If More Metrics is enabled, its separately installed files live under `~/.claude-codex-presence/extensions/more-metrics`. That extension is not part of the core package and has its own behavior and privacy boundary.
+If More Metrics is enabled, its separately installed files live under `~/.claude-codex-presence/extensions/more-metrics`. It retains collection cursors, a device signing key, sync status, and at most one compact pending aggregate batch until Cloudflare acknowledges it. It does not retain a historical metrics snapshot.
 
 ## Network and external disclosure
 
@@ -37,7 +37,8 @@ If More Metrics is enabled, its separately installed files live under `~/.claude
 | Update check | Manually, or daily after automatic updates are enabled | `registry.npmjs.org` | Package name and normal HTTPS request metadata |
 | Package update | Only after a manual update or opt-in automatic update finds a newer version | npm registry | Normal npm package-download metadata |
 | More Metrics install | Only after the user enables More Metrics | npm registry | Request for the pinned `punchcard-advanced-metrics` package |
-| Public profile | Only after More Metrics is installed, a profile host is configured, Discord supplies its public username locally, and the user clicks the button | The configured Punchcard profile URL in the default browser | Public Discord username in the URL path and normal browser request metadata |
+| More Metrics sync | Only while More Metrics is enabled | `app.theartificialgames.workers.dev` on Cloudflare | Discord user ID/username/display name; device public key and signature; daily Codex/Claude token, turn, active-time, provider, model, and service-mode counters |
+| Public profile | After the first More Metrics sync and when the user opens it | `app.theartificialgames.workers.dev` in the default browser | Public Discord username in the URL path and normal browser request metadata |
 
 The Discord client and any optional extension are separate software. Their own terms and privacy policies govern what they do after Punchcard hands them data or starts them.
 

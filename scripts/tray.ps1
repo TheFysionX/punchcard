@@ -137,7 +137,7 @@ $panel.TopMost = $true
 $panel.KeyPreview = $true
 $panel.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
 $panel.StartPosition = [System.Windows.Forms.FormStartPosition]::Manual
-$panel.ClientSize = [System.Drawing.Size]::new(330, 475)
+$panel.ClientSize = [System.Drawing.Size]::new(330, 577)
 $panel.BackColor = [System.Drawing.Color]::FromArgb(30, 31, 36)
 
 $header = [System.Windows.Forms.Label]::new()
@@ -180,29 +180,40 @@ $separator1.Size = [System.Drawing.Size]::new(294, 2)
 $panel.Controls.Add($separator1)
 
 $presenceToggle = New-Toggle "Presence enabled" 150
-$startupToggle = New-Toggle "Start with Windows" 180
-$autoUpdateToggle = New-Toggle "Automatic updates" 210
-$moreMetricsToggle = New-Toggle "More Metrics" 240
-$panel.Controls.AddRange(@($presenceToggle, $startupToggle, $autoUpdateToggle, $moreMetricsToggle))
+$showAgentCountToggle = New-Toggle "Show agent count" 180
+$showDailyTokensToggle = New-Toggle "Show daily token usage" 210
+$showWeeklyTokensToggle = New-Toggle "Show weekly token usage" 240
+$startupToggle = New-Toggle "Start with Windows" 280
+$autoUpdateToggle = New-Toggle "Automatic updates" 310
+$moreMetricsToggle = New-Toggle "More Metrics" 340
+$panel.Controls.AddRange(@(
+  $presenceToggle,
+  $showAgentCountToggle,
+  $showDailyTokensToggle,
+  $showWeeklyTokensToggle,
+  $startupToggle,
+  $autoUpdateToggle,
+  $moreMetricsToggle
+))
 
 $moreMetricsStatusLabel = [System.Windows.Forms.Label]::new()
-$moreMetricsStatusLabel.Location = [System.Drawing.Point]::new(38, 268)
+$moreMetricsStatusLabel.Location = [System.Drawing.Point]::new(38, 368)
 $moreMetricsStatusLabel.Size = [System.Drawing.Size]::new(274, 23)
 $moreMetricsStatusLabel.ForeColor = [System.Drawing.Color]::FromArgb(155, 160, 171)
 $moreMetricsStatusLabel.Font = [System.Drawing.Font]::new("Segoe UI", 8.5)
 $moreMetricsStatusLabel.Text = "Off - installs only when enabled"
 $panel.Controls.Add($moreMetricsStatusLabel)
 
-$viewProfileButton = New-Button "View profile" 18 297 294
+$viewProfileButton = New-Button "View profile" 18 397 294
 $panel.Controls.Add($viewProfileButton)
 
-$checkButton = New-Button "Check for updates" 18 345 142
-$updateButton = New-Button "Update" 170 345 142
+$checkButton = New-Button "Check for updates" 18 445 142
+$updateButton = New-Button "Update" 170 445 142
 $updateButton.Enabled = $false
 $panel.Controls.AddRange(@($checkButton, $updateButton))
 
 $updateStatusLabel = [System.Windows.Forms.Label]::new()
-$updateStatusLabel.Location = [System.Drawing.Point]::new(18, 386)
+$updateStatusLabel.Location = [System.Drawing.Point]::new(18, 486)
 $updateStatusLabel.Size = [System.Drawing.Size]::new(294, 23)
 $updateStatusLabel.ForeColor = [System.Drawing.Color]::FromArgb(210, 212, 219)
 $updateStatusLabel.Font = [System.Drawing.Font]::new("Segoe UI", 9)
@@ -211,12 +222,12 @@ $panel.Controls.Add($updateStatusLabel)
 
 $separator2 = [System.Windows.Forms.Label]::new()
 $separator2.BorderStyle = [System.Windows.Forms.BorderStyle]::Fixed3D
-$separator2.Location = [System.Drawing.Point]::new(18, 419)
+$separator2.Location = [System.Drawing.Point]::new(18, 519)
 $separator2.Size = [System.Drawing.Size]::new(294, 2)
 $panel.Controls.Add($separator2)
 
-$restartButton = New-Button "Restart" 18 431 142
-$quitButton = New-Button "Quit" 170 431 142
+$restartButton = New-Button "Restart" 18 531 142
+$quitButton = New-Button "Quit" 170 531 142
 $panel.Controls.AddRange(@($restartButton, $quitButton))
 
 $quickMenu = [System.Windows.Forms.ContextMenuStrip]::new()
@@ -263,6 +274,9 @@ function Update-Panel {
 
   $script:suppressToggleEvents = $true
   $presenceToggle.Checked = $enabled
+  $showAgentCountToggle.Checked = $null -eq $settings -or $settings.showAgentCount -ne $false
+  $showDailyTokensToggle.Checked = $null -eq $settings -or $settings.showDailyTokens -ne $false
+  $showWeeklyTokensToggle.Checked = $null -eq $settings -or $settings.showWeeklyTokens -ne $false
   $startupToggle.Checked = $null -eq $settings -or $settings.startAtLogin -ne $false
   $autoUpdateToggle.Checked = $settings.autoUpdate -eq $true
   $moreMetricsToggle.Checked = $settings.moreMetrics -eq $true -or ($moreMetricsPending -and -not $moreMetricsRemoving)
@@ -297,7 +311,8 @@ function Update-Panel {
   $connectItem.Enabled = -not $script:connectRunning
   if ($null -ne $status.activity) {
     $activity.Text = [string]$status.activity.details
-    $tokens.Text = [string]$status.activity.state
+    $activityState = [string]$status.activity.state
+    $tokens.Text = if ([string]::IsNullOrWhiteSpace($activityState)) { "Token usage hidden" } else { $activityState }
   } elseif ($enabled) {
     $activity.Text = "Waiting for Codex or Claude"
     $tokens.Text = "No presence displayed"
@@ -307,7 +322,13 @@ function Update-Panel {
   }
   $pauseItem.Text = if ($enabled) { "Pause presence" } else { "Resume presence" }
   $agents = if ($null -ne $status.activeAgents) { [int]$status.activeAgents } else { 0 }
-  $tooltip = if ($connected) { "Punchcard - Discord connected - $agents agents" } else { "Punchcard - Discord disconnected" }
+  $tooltip = if ($connected -and $showAgentCountToggle.Checked) {
+    "Punchcard - Discord connected - $agents agents"
+  } elseif ($connected) {
+    "Punchcard - Discord connected"
+  } else {
+    "Punchcard - Discord disconnected"
+  }
   $notify.Text = $tooltip.Substring(0, [Math]::Min(63, $tooltip.Length))
 }
 
@@ -415,6 +436,21 @@ $presenceToggle.add_CheckedChanged({
   Start-Sleep -Milliseconds 250
   Update-Panel
 })
+$showAgentCountToggle.add_CheckedChanged({
+  if ($script:suppressToggleEvents) { return }
+  [void](Invoke-Punchcard @("display", "agents", $(if ($showAgentCountToggle.Checked) { "on" } else { "off" })))
+  Update-Panel
+})
+$showDailyTokensToggle.add_CheckedChanged({
+  if ($script:suppressToggleEvents) { return }
+  [void](Invoke-Punchcard @("display", "daily", $(if ($showDailyTokensToggle.Checked) { "on" } else { "off" })))
+  Update-Panel
+})
+$showWeeklyTokensToggle.add_CheckedChanged({
+  if ($script:suppressToggleEvents) { return }
+  [void](Invoke-Punchcard @("display", "weekly", $(if ($showWeeklyTokensToggle.Checked) { "on" } else { "off" })))
+  Update-Panel
+})
 $startupToggle.add_CheckedChanged({
   if ($script:suppressToggleEvents) { return }
   [void](Invoke-Punchcard @("startup", $(if ($startupToggle.Checked) { "on" } else { "off" })))
@@ -459,7 +495,7 @@ $restartButton.add_Click({
   Update-Panel
 })
 $quitButton.add_Click({
-  [void](Invoke-Punchcard @("off"))
+  [void](Invoke-Punchcard @("quit", "--from-tray"))
   [System.Windows.Forms.Application]::Exit()
 })
 $openItem.add_Click({ Show-Panel })
@@ -471,7 +507,7 @@ $pauseItem.add_Click({
   Update-Panel
 })
 $quickRestartItem.add_Click({ [void](Invoke-Punchcard @("restart")); Update-Panel })
-$quickQuitItem.add_Click({ [void](Invoke-Punchcard @("off")); [System.Windows.Forms.Application]::Exit() })
+$quickQuitItem.add_Click({ [void](Invoke-Punchcard @("quit", "--from-tray")); [System.Windows.Forms.Application]::Exit() })
 
 $timer = [System.Windows.Forms.Timer]::new()
 $timer.Interval = 5000

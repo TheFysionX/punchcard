@@ -222,6 +222,11 @@ async function statusSnapshot() {
       ...saved,
       profile: profileSnapshot(settings, saved),
       moreMetrics: moreMetricsSnapshot,
+      display: {
+        agentCount: settings.showAgentCount !== false,
+        dailyTokens: settings.showDailyTokens !== false,
+        weeklyTokens: settings.showWeeklyTokens !== false,
+      },
       pid,
     };
   }
@@ -233,7 +238,11 @@ async function statusSnapshot() {
   ]);
   const claude = addClaudeDesktopBackground(hookActivity, detected.claudeDesktopBackgroundAgents);
   const processes = { ...detected, claudeOpen: claude.activeAgents > 0, claudeAgents: claude.activeAgents };
-  const activity = buildPresence(processes, usage);
+  const activity = buildPresence(processes, usage, {
+    showAgentCount: settings.showAgentCount,
+    showDailyTokens: settings.showDailyTokens,
+    showWeeklyTokens: settings.showWeeklyTokens,
+  });
   return {
     version: packageMetadata.version,
     enabled: settings.enabled,
@@ -254,6 +263,11 @@ async function statusSnapshot() {
     clientId: settings.clientId,
     profile: profileSnapshot(settings, saved || {}),
     moreMetrics: moreMetricsSnapshot,
+    display: {
+      agentCount: settings.showAgentCount !== false,
+      dailyTokens: settings.showDailyTokens !== false,
+      weeklyTokens: settings.showWeeklyTokens !== false,
+    },
     error: saved?.error || null,
   };
 }
@@ -273,7 +287,7 @@ function printStatus(snapshot) {
   }
   console.log(`Tokens today: ${snapshot.tokensToday?.totalTokens ?? 0}`);
   console.log(`Tokens rolling week: ${snapshot.tokensToday?.totalTokensWeek ?? 0}`);
-  if (snapshot.activity) console.log(`Presence: ${snapshot.activity.details} / ${snapshot.activity.state}`);
+  if (snapshot.activity) console.log(`Presence: ${[snapshot.activity.details, snapshot.activity.state].filter(Boolean).join(" / ")}`);
   console.log(`Image: ${snapshot.image || "none"}`);
   if (snapshot.discordClientId || snapshot.clientId) console.log(`Discord app: ${snapshot.discordClientId || snapshot.clientId}`);
   console.log(`More Metrics: ${snapshot.moreMetrics?.enabled ? "on" : snapshot.moreMetrics?.pending ? "installing" : "off"}`);
@@ -319,6 +333,12 @@ switch (command) {
     await clearClaudeActivity(paths);
     console.log("Punchcard is off.");
     break;
+  case "quit": {
+    await stopDaemon();
+    if (!process.argv.includes("--from-tray")) await stopTray(paths);
+    console.log("Punchcard closed. Start with Windows remains unchanged.");
+    break;
+  }
   case "toggle": {
     const settings = await readSettings(paths);
     if (settings.enabled && await runningPid()) {
@@ -392,6 +412,41 @@ switch (command) {
     const requested = String(process.argv[3] || "status").toLowerCase();
     if (requested === "on" || requested === "off") await writeSettings({ autoUpdate: requested === "on" }, paths);
     console.log(`Automatic updates: ${(await readSettings(paths)).autoUpdate ? "on" : "off"}`);
+    break;
+  }
+  case "display": {
+    const field = String(process.argv[3] || "status").toLowerCase();
+    const requested = String(process.argv[4] || "status").toLowerCase();
+    const settingByField = {
+      agents: "showAgentCount",
+      daily: "showDailyTokens",
+      weekly: "showWeeklyTokens",
+    };
+    if (field !== "status" && !Object.hasOwn(settingByField, field)) {
+      console.error("Usage: punchcard display <agents|daily|weekly> <on|off|status>");
+      process.exitCode = 1;
+      break;
+    }
+    if (field !== "status" && requested !== "status" && requested !== "on" && requested !== "off") {
+      console.error("Usage: punchcard display <agents|daily|weekly> <on|off|status>");
+      process.exitCode = 1;
+      break;
+    }
+    if (field !== "status" && requested !== "status") {
+      await writeSettings({ [settingByField[field]]: requested === "on" }, paths);
+    }
+    const displaySettings = await readSettings(paths);
+    const result = {
+      agents: displaySettings.showAgentCount !== false,
+      daily: displaySettings.showDailyTokens !== false,
+      weekly: displaySettings.showWeeklyTokens !== false,
+    };
+    if (json) console.log(JSON.stringify(result));
+    else if (field === "status") {
+      console.log(`Discord display: agents ${result.agents ? "on" : "off"}; daily ${result.daily ? "on" : "off"}; weekly ${result.weekly ? "on" : "off"}`);
+    } else {
+      console.log(`${field[0].toUpperCase()}${field.slice(1)} display: ${result[field] ? "on" : "off"}`);
+    }
     break;
   }
   case "profile": {
@@ -521,8 +576,9 @@ switch (command) {
   case "help":
   case "--help":
   case "-h":
-    console.log("Usage: punchcard <on|off|toggle|connect|status|doctor|restart|tray|startup|auto-update|more-metrics|profile|update-check|update|app>");
+    console.log("Usage: punchcard <on|off|quit|toggle|connect|status|doctor|restart|tray|startup|auto-update|display|more-metrics|profile|update-check|update|app>");
     console.log("       punchcard app --id ID");
+    console.log("       punchcard display <agents|daily|weekly> <on|off|status>");
     console.log("       punchcard profile [--base-url URL]");
     break;
   case "version":
