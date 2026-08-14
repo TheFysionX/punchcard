@@ -18,6 +18,12 @@ Requires [Node.js 18 or newer](https://nodejs.org/) and the Discord desktop app.
 npm install -g punchcard-presence
 ```
 
+If you would prefer to use an agent or AI, paste this:
+
+```text
+Read https://github.com/TheFysionX/punchcard and install Punchcard.
+```
+
 Punchcard starts automatically after installation. No API key, bot token, or Punchcard account is required.
 
 ### Supported platforms
