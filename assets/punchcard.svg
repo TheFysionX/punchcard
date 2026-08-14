@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Punchcard logo</title>
+  <desc id="desc">A black punch card with white punched slots arranged into the letter P.</desc>
+
+  <rect width="1024" height="1024" fill="#FFFFFF"/>
+
+  <path
+    fill="#111318"
+    d="M202 202H742L822 282V822H202V202Z"
+  />
+
+  <g fill="#FFFFFF">
+    <rect x="340" y="270" width="82" height="58" rx="10"/>
+    <rect x="471" y="270" width="82" height="58" rx="10"/>
+    <rect x="602" y="270" width="82" height="58" rx="10"/>
+
+    <rect x="340" y="377" width="82" height="58" rx="10"/>
+    <rect x="602" y="377" width="82" height="58" rx="10"/>
+
+    <rect x="340" y="484" width="82" height="58" rx="10"/>
+    <rect x="471" y="484" width="82" height="58" rx="10"/>
+    <rect x="602" y="484" width="82" height="58" rx="10"/>
+
+    <rect x="340" y="591" width="82" height="58" rx="10"/>
+    <rect x="340" y="698" width="82" height="58" rx="10"/>
+  </g>
+</svg>
