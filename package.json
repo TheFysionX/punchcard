@@ -1,0 +1,53 @@
+{
+  "name": "claude-codex-presence",
+  "version": "1.0.0",
+  "description": "Punchcard Discord Rich Presence and local AI usage tracking for Claude Code and Codex",
+  "type": "module",
+  "bin": {
+    "punchcard": "bin/cli.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node tools/check-package.mjs",
+    "release:check": "npm test && npm run check && node tools/smoke-package.mjs",
+    "prepublishOnly": "npm run release:check",
+    "postinstall": "node scripts/postinstall.cjs"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "scripts",
+    "assets",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "PRIVACY.md",
+    "SECURITY.md"
+  ],
+  "keywords": [
+    "discord",
+    "rich-presence",
+    "punchcard",
+    "ai-usage",
+    "token-usage",
+    "claude-code",
+    "codex"
+  ],
+  "author": "TheFysionX",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheFysionX/punchcard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TheFysionX/punchcard/issues"
+  },
+  "homepage": "https://github.com/TheFysionX/punchcard#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
