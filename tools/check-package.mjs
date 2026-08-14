@@ -22,7 +22,7 @@ async function walk(directory) {
   return files;
 }
 
-assert(metadata.name === "claude-codex-presence", "Unexpected npm package name");
+assert(metadata.name === "punchcard-presence", "Unexpected npm package name");
 assert(/^\d+\.\d+\.\d+$/u.test(metadata.version), "Release version must be stable semantic versioning");
 assert(metadata.bin?.punchcard === "bin/cli.js", "The punchcard CLI mapping is missing");
 assert(metadata.license === "MIT", "The package license must remain explicit");
@@ -67,7 +67,7 @@ for (const relativePath of ["bin", "lib", "scripts", "README.md", "PRIVACY.md"])
 }
 
 const readme = await fs.readFile(path.join(root, "README.md"), "utf8");
-assert(readme.includes("npm install -g claude-codex-presence"), "README install instructions are missing");
+assert(readme.includes("npm install -g punchcard-presence"), "README install instructions are missing");
 assert(!readme.includes("The only network-adjacent action"), "README contains the obsolete network claim");
 assert(!readme.includes("http://localhost:4173"), "README contains a development profile destination");
 

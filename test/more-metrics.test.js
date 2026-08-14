@@ -32,10 +32,10 @@ test("More Metrics installs only the pinned optional package inside managed stat
   const result = await installMoreMetrics(paths, {
     runNpm: async (arguments_) => {
       npmArguments = arguments_;
-      const packageRoot = path.join(paths.moreMetricsRoot, "node_modules", "tag-plugin");
+      const packageRoot = path.join(paths.moreMetricsRoot, "node_modules", "punchcard-advanced-metrics");
       await fs.mkdir(packageRoot, { recursive: true });
       await fs.writeFile(path.join(packageRoot, "package.json"), JSON.stringify({
-        name: "tag-plugin",
+        name: "punchcard-advanced-metrics",
         version: "0.1.28",
       }), "utf8");
       return 0;
@@ -48,7 +48,7 @@ test("More Metrics installs only the pinned optional package inside managed stat
     "install",
     "--prefix",
     paths.moreMetricsRoot,
-    "tag-plugin@0.1.28",
+    "punchcard-advanced-metrics@0.1.28",
   ]);
   for (const required of ["--no-save", "--package-lock=false", "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund"]) {
     assert.ok(npmArguments.includes(required), `missing ${required}`);

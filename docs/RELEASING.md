@@ -45,8 +45,8 @@ Publishing that GitHub release triggers `.github/workflows/release.yml`. It veri
 ## Verify the published release
 
 ```sh
-npm view claude-codex-presence version dist.integrity repository --json
-npx --yes claude-codex-presence help
+npm view punchcard-presence version dist.integrity repository --json
+npx --yes punchcard-presence help
 ```
 
 Confirm that the GitHub release, npm version, changelog entry, and provenance all refer to the same commit and semantic version.

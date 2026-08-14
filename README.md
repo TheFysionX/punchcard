@@ -1,8 +1,8 @@
 # Punchcard
 
 [![CI](https://github.com/TheFysionX/punchcard/actions/workflows/ci.yml/badge.svg)](https://github.com/TheFysionX/punchcard/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/claude-codex-presence)](https://www.npmjs.com/package/claude-codex-presence)
-[![license](https://img.shields.io/npm/l/claude-codex-presence)](LICENSE)
+[![npm](https://img.shields.io/npm/v/punchcard-presence)](https://www.npmjs.com/package/punchcard-presence)
+[![license](https://img.shields.io/npm/l/punchcard-presence)](LICENSE)
 
 Punchcard is a small, local-first Discord Rich Presence for Claude Code and Codex. It shows which platform is working, the number of active agents, today's token usage, and a real rolling seven-day total.
 
@@ -26,7 +26,7 @@ Windows 10/11 gets the full tray interface. macOS and Linux run the same headles
 ## Install
 
 ```sh
-npm install -g claude-codex-presence
+npm install -g punchcard-presence
 ```
 
 That one global install starts Punchcard, configures user-level login startup, and adds the lifecycle hooks used to count Claude Code work. It does not require an API key, bot token, or Punchcard account.
@@ -34,7 +34,7 @@ That one global install starts Punchcard, configures user-level login startup, a
 If you prefer to inspect the package before allowing its install script to run:
 
 ```sh
-npm install -g claude-codex-presence --ignore-scripts
+npm install -g punchcard-presence --ignore-scripts
 punchcard on
 ```
 
@@ -81,9 +81,9 @@ Network access happens only for explicit or opt-in features: npm installation, u
 
 ## More Metrics
 
-More Metrics is off by default and is not bundled with Punchcard. Enabling it installs the pinned `tag-plugin` package into Punchcard's managed local extensions directory with package scripts disabled. Removing it deletes that managed directory.
+More Metrics is off by default and is not bundled with Punchcard. Enabling it installs the pinned `punchcard-advanced-metrics` package into Punchcard's managed local extensions directory with package scripts disabled. Removing it deletes that managed directory.
 
-This extension is a separate product with its own behavior and privacy boundary. Review [`tag-plugin` on npm](https://www.npmjs.com/package/tag-plugin) before enabling it. Once installed, Punchcard can use the public username from Discord's local READY event to open that account's `/{username}/stats` profile. The button stays hidden until Discord has supplied that identity and a profile host has been configured with `punchcard profile --base-url URL`.
+This extension is a separate product with its own behavior and privacy boundary. Review [`punchcard-advanced-metrics` on npm](https://www.npmjs.com/package/punchcard-advanced-metrics) before enabling it. Once installed, Punchcard can use the public username from Discord's local READY event to open that account's `/{username}/stats` profile. The button stays hidden until Discord has supplied that identity and a profile host has been configured with `punchcard profile --base-url URL`.
 
 ## Discord application
 
@@ -116,7 +116,7 @@ Run the cleanup command before removing the npm package:
 
 ```sh
 punchcard off
-npm uninstall -g claude-codex-presence
+npm uninstall -g punchcard-presence
 ```
 
 npm does not reliably run uninstall hooks. The explicit `off` command removes Punchcard's startup entry and only the Claude hooks tagged as Punchcard-owned.

@@ -25,4 +25,4 @@ You should receive an acknowledgement within seven days. A fix timeline depends 
 
 ## Scope
 
-The core package, install/startup behavior, Claude hook management, local data parsing, Discord IPC, update mechanism, and managed optional-extension boundary are in scope. Vulnerabilities in Discord, npm, Claude, Codex, Node.js, or the separately installed `tag-plugin` package should also be reported to their respective maintainers.
+The core package, install/startup behavior, Claude hook management, local data parsing, Discord IPC, update mechanism, and managed optional-extension boundary are in scope. Vulnerabilities in Discord, npm, Claude, Codex, Node.js, or the separately installed `punchcard-advanced-metrics` package should also be reported to their respective maintainers.
