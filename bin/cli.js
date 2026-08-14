@@ -15,6 +15,7 @@ import { installClaudeHooks, removeClaudeHooks } from "../lib/claude-hooks.js";
 import { runTrayHost, runningTrayPid, startTrayDetached, stopTray } from "../lib/tray.js";
 import { checkForUpdate, isValidVersion } from "../lib/updater.js";
 import { findNpmCli } from "../lib/npm-cli.js";
+import { profileSnapshot } from "../lib/profile.js";
 import {
   installMoreMetrics,
   readMoreMetricsStatus,
@@ -213,11 +214,13 @@ async function statusSnapshot() {
   };
   if (pid && saved) {
     return {
+      version: packageMetadata.version,
       enabled: settings.enabled,
       running: true,
       trayRunning: Boolean(trayPid),
       trayPid,
       ...saved,
+      profile: profileSnapshot(settings, saved),
       moreMetrics: moreMetricsSnapshot,
       pid,
     };
@@ -232,6 +235,7 @@ async function statusSnapshot() {
   const processes = { ...detected, claudeOpen: claude.activeAgents > 0, claudeAgents: claude.activeAgents };
   const activity = buildPresence(processes, usage);
   return {
+    version: packageMetadata.version,
     enabled: settings.enabled,
     running: Boolean(pid),
     trayRunning: Boolean(trayPid),
@@ -248,6 +252,7 @@ async function statusSnapshot() {
     activity: activity ? { details: activity.details, state: activity.state } : null,
     claudeActivity: claude,
     clientId: settings.clientId,
+    profile: profileSnapshot(settings, saved || {}),
     moreMetrics: moreMetricsSnapshot,
     error: saved?.error || null,
   };
@@ -258,7 +263,7 @@ function printStatus(snapshot) {
     console.log(JSON.stringify(snapshot, null, 2));
     return;
   }
-  console.log(`Punchcard: ${snapshot.enabled ? "on" : "off"}${snapshot.running ? ` (pid ${snapshot.pid})` : ""}`);
+  console.log(`Punchcard v${snapshot.version || packageMetadata.version}: ${snapshot.enabled ? "on" : "off"}${snapshot.running ? ` (pid ${snapshot.pid})` : ""}`);
   console.log(`Discord: ${snapshot.discordConnected ? "connected" : "not connected"}`);
   console.log(`Tray: ${snapshot.trayRunning ? `running (pid ${snapshot.trayPid})` : "not running"}`);
   console.log(`Detected: ${snapshot.vendors?.claude ? "Claude" : ""}${snapshot.vendors?.claude && snapshot.vendors?.codex ? " + " : ""}${snapshot.vendors?.codex ? "Codex" : ""}${!snapshot.vendors?.claude && !snapshot.vendors?.codex ? "none" : ""}`);
@@ -272,6 +277,7 @@ function printStatus(snapshot) {
   console.log(`Image: ${snapshot.image || "none"}`);
   if (snapshot.discordClientId || snapshot.clientId) console.log(`Discord app: ${snapshot.discordClientId || snapshot.clientId}`);
   console.log(`More Metrics: ${snapshot.moreMetrics?.enabled ? "on" : snapshot.moreMetrics?.pending ? "installing" : "off"}`);
+  console.log(`Profile: ${snapshot.profile?.url || "waiting for Discord identity"}`);
   if (snapshot.error) console.log(`Last error: ${snapshot.error}`);
 }
 
@@ -500,6 +506,11 @@ switch (command) {
   case "-h":
     console.log("Usage: punchcard <on|off|toggle|connect|status|doctor|restart|tray|startup|auto-update|more-metrics|update-check|update|app>");
     console.log("       punchcard app --id ID");
+    break;
+  case "version":
+  case "--version":
+  case "-v":
+    console.log(packageMetadata.version);
     break;
   case "restart":
     await stopDaemon();

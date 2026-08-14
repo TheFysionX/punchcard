@@ -83,6 +83,17 @@ try {
   });
   if (!help.includes("Usage: punchcard")) fail("The installed Punchcard CLI did not start correctly");
 
+  const version = run(process.execPath, [path.join(installedRoot, "bin", "cli.js"), "--version"], {
+    env: {
+      ...process.env,
+      CLAUDE_CODEX_PRESENCE_HOME: isolatedHome,
+      CODEX_HOME: path.join(temporary, "codex"),
+      CLAUDE_CONFIG_DIR: path.join(temporary, "claude"),
+      CLAUDE_CODEX_PRESENCE_NO_AUTOSTART: "1",
+    },
+  }).trim();
+  if (version !== metadata.version) fail(`Installed CLI reported version ${version || "<empty>"}`);
+
   console.log(`Smoke-tested ${metadata.name}@${metadata.version}: ${packed.entryCount} files, ${packed.unpackedSize} unpacked bytes.`);
 } finally {
   await fs.rm(temporary, { recursive: true, force: true });

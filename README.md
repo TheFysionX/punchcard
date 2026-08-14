@@ -43,6 +43,7 @@ punchcard on
 | Command | Purpose |
 | --- | --- |
 | `punchcard status` | Show the current connection, active-agent, and usage state |
+| `punchcard --version` | Print the installed Punchcard version |
 | `punchcard on` | Enable and start Punchcard |
 | `punchcard off` | Stop Punchcard and remove its login entry and Claude hooks |
 | `punchcard toggle` | Switch Punchcard on or off |
@@ -51,6 +52,7 @@ punchcard on
 | `punchcard tray --show` | Open the Windows tray panel |
 | `punchcard startup on\|off` | Control login startup |
 | `punchcard auto-update on\|off` | Opt in or out of automatic npm updates |
+| `punchcard more-metrics on\|off\|status` | Manage the separately installed optional extension |
 | `punchcard update-check` | Check npm for a newer version |
 | `punchcard update` | Install the newest verified npm version |
 | `punchcard app --id ID` | Use a different Discord application ID |
@@ -80,7 +82,7 @@ Network access happens only for explicit or opt-in features: npm installation, u
 
 More Metrics is off by default and is not bundled with Punchcard. Enabling it installs the pinned `tag-plugin` package into Punchcard's managed local extensions directory with package scripts disabled. Removing it deletes that managed directory.
 
-This extension is a separate product with its own behavior and privacy boundary. Review [`tag-plugin` on npm](https://www.npmjs.com/package/tag-plugin) before enabling it. The profile button remains hidden until the extension and a profile destination are both configured.
+This extension is a separate product with its own behavior and privacy boundary. Review [`tag-plugin` on npm](https://www.npmjs.com/package/tag-plugin) before enabling it. Once installed, Punchcard uses the public username from Discord's local READY event to open that account's `/{username}/stats` profile. The button stays hidden until Discord has supplied that identity.
 
 ## Discord application
 

@@ -11,7 +11,7 @@ body:
     id: version
     attributes:
       label: Punchcard version
-      description: Run `punchcard status` and provide the version you installed.
+      description: Run `punchcard --version` and provide the result.
       placeholder: 1.0.0
     validations:
       required: true
