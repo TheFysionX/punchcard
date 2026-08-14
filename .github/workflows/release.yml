@@ -26,12 +26,27 @@ jobs:
         with:
           node-version: "24"
           registry-url: https://registry.npmjs.org
-          cache: npm
-      - name: Use a trusted-publishing capable npm CLI
-        run: npm install --global npm@latest
+          package-manager-cache: false
       - name: Verify release tag and package version
         run: node -e "const p=require('./package.json'); if (process.env.GITHUB_REF_NAME !== 'v'+p.version) throw new Error('Release tag must equal v'+p.version)"
+      - name: Check whether this version is already on npm
+        id: registry
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import metadata from './package.json' with { type: 'json' };
+          const spec = `${metadata.name}@${metadata.version}`;
+          const url = `https://registry.npmjs.org/${encodeURIComponent(metadata.name)}/${encodeURIComponent(metadata.version)}`;
+          const response = await fetch(url);
+          if (response.status !== 404 && !response.ok) throw new Error(`npm registry returned ${response.status}`);
+          const shouldPublish = response.status === 404;
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `publish=${shouldPublish}\n`);
+          console.log(shouldPublish ? `${spec} is available.` : `${spec} is already published; this release is an idempotent no-op.`);
+          NODE
       - name: Install without product lifecycle scripts
+        if: steps.registry.outputs.publish == 'true'
         run: npm ci --ignore-scripts
       - name: Publish with provenance
+        if: steps.registry.outputs.publish == 'true'
         run: npm publish --access public --provenance

@@ -26,8 +26,11 @@ Then open the package's npm **Settings > Trusted Publisher**, select GitHub Acti
 - repository: `punchcard`
 - workflow: `release.yml`
 - environment: `npm`
+- allowed action: `npm publish`
 
 The repository URL in `package.json` must exactly match the public GitHub repository.
+
+Create the `v1.0.0` GitHub release after the manual publish. The workflow detects that the exact npm version already exists and exits successfully without attempting to overwrite it.
 
 ## Normal release
 
