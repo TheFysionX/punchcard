@@ -45,31 +45,18 @@ Support for more ADEs is planned for the immediate future.
 
 ## Commands
 
+Punchcard starts automatically. These are the only commands most people may need:
+
 | Command | Description |
 | --- | --- |
 | `punchcard on` | Enable and start Punchcard |
 | `punchcard off` | Stop Punchcard and remove its startup entry and Claude hooks |
 | `punchcard quit` | Close Punchcard without changing the Start with Windows setting |
-| `punchcard toggle` | Switch Punchcard on or off |
 | `punchcard connect` | Open Discord if needed and reconnect Punchcard |
 | `punchcard status` | View the current connection, agent, and usage status |
-| `punchcard doctor` | Print diagnostic status information |
 | `punchcard restart` | Restart the daemon and tray |
 | `punchcard tray --show` | Open the Windows mini dashboard |
-| `punchcard startup <on\|off\|status>` | Manage Start with Windows |
-| `punchcard auto-update <on\|off\|status>` | Manage automatic updates |
-| `punchcard display status` | Show all Discord display settings |
-| `punchcard display <agents\|daily\|weekly> <on\|off\|status>` | Manage the agent count and token totals shown in Discord |
-| `punchcard more-metrics <on\|off\|status>` | Manage the optional Advanced Metrics extension from the CLI |
-| `punchcard profile [--base-url URL]` | View the profile status or configure its host |
-| `punchcard profile-link <on\|off\|status>` | Control whether the Discord token line links to your profile |
-| `punchcard update-check` | Check for a newer version |
-| `punchcard update` | Install the newest available version |
-| `punchcard app [--id ID]` | View or change the Discord application ID |
-| `punchcard --version` | Print the installed version |
 | `punchcard help` | Show command-line help |
-
-Add `--json` to `connect`, `status`, `display`, `more-metrics`, `profile`, or `update-check` for machine-readable output.
 
 ## Advanced Metrics
 
