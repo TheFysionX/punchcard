@@ -271,22 +271,17 @@ function Update-Panel {
   if ($moreMetricsPending) {
     $moreMetricsStatusLabel.Text = if ($moreMetricsRemoving) { "Removing in the background..." } else { "Installing in the background..." }
   } elseif ($settings.moreMetrics -eq $true -and $moreMetricsStatus.state -eq "installed") {
-    $moreMetricsStatusLabel.Text = "Installed - website connection comes next"
+    $profileName = [string]$status.profile.username
+    $moreMetricsStatusLabel.Text = if ([string]::IsNullOrWhiteSpace($profileName)) { "Installed - connect Discord to finish" } else { "Connected as $profileName" }
   } elseif ($moreMetricsStatus.state -eq "failed") {
     $moreMetricsStatusLabel.Text = "Install failed - click to retry"
   } else {
     $moreMetricsStatusLabel.Text = "Off - installs only when enabled"
   }
 
-  $profileBaseUrl = if (-not [string]::IsNullOrWhiteSpace([string]$env:PUNCHCARD_PROFILE_BASE_URL)) {
-    [string]$env:PUNCHCARD_PROFILE_BASE_URL
-  } else {
-    [string]$settings.profileBaseUrl
-  }
   $profileReady = $settings.moreMetrics -eq $true -and
     $moreMetricsStatus.state -eq "installed" -and
-    -not [string]::IsNullOrWhiteSpace($profileBaseUrl) -and
-    -not [string]::IsNullOrWhiteSpace([string]$settings.profileUsername)
+    -not [string]::IsNullOrWhiteSpace([string]$status.profile.url)
   $viewProfileButton.Visible = $profileReady
   $viewProfileButton.Enabled = $profileReady
 
@@ -329,15 +324,9 @@ function Start-DiscordConnection {
 }
 
 function Open-PublicProfile {
-  $settings = Read-JsonFile $SettingsPath
-  $baseUrl = if (-not [string]::IsNullOrWhiteSpace([string]$env:PUNCHCARD_PROFILE_BASE_URL)) {
-    [string]$env:PUNCHCARD_PROFILE_BASE_URL
-  } elseif (-not [string]::IsNullOrWhiteSpace([string]$settings.profileBaseUrl)) {
-    [string]$settings.profileBaseUrl
-  } else { [string]$settings.profileBaseUrl }
-  if ([string]::IsNullOrWhiteSpace($baseUrl) -or [string]::IsNullOrWhiteSpace([string]$settings.profileUsername)) { return }
-  $username = [Uri]::EscapeDataString([string]$settings.profileUsername)
-  $profileUrl = "$($baseUrl.TrimEnd('/'))/$username/stats"
+  $status = Read-JsonFile $StatusPath
+  $profileUrl = [string]$status.profile.url
+  if ([string]::IsNullOrWhiteSpace($profileUrl)) { return }
   Start-Process $profileUrl
 }
 

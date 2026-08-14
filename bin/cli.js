@@ -15,7 +15,7 @@ import { installClaudeHooks, removeClaudeHooks } from "../lib/claude-hooks.js";
 import { runTrayHost, runningTrayPid, startTrayDetached, stopTray } from "../lib/tray.js";
 import { checkForUpdate, isValidVersion } from "../lib/updater.js";
 import { findNpmCli } from "../lib/npm-cli.js";
-import { profileSnapshot } from "../lib/profile.js";
+import { normalizeProfileBaseUrl, profileSnapshot } from "../lib/profile.js";
 import {
   installMoreMetrics,
   readMoreMetricsStatus,
@@ -277,7 +277,7 @@ function printStatus(snapshot) {
   console.log(`Image: ${snapshot.image || "none"}`);
   if (snapshot.discordClientId || snapshot.clientId) console.log(`Discord app: ${snapshot.discordClientId || snapshot.clientId}`);
   console.log(`More Metrics: ${snapshot.moreMetrics?.enabled ? "on" : snapshot.moreMetrics?.pending ? "installing" : "off"}`);
-  console.log(`Profile: ${snapshot.profile?.url || "waiting for Discord identity"}`);
+  console.log(`Profile: ${snapshot.profile?.url || "not ready"}`);
   if (snapshot.error) console.log(`Last error: ${snapshot.error}`);
 }
 
@@ -394,6 +394,23 @@ switch (command) {
     console.log(`Automatic updates: ${(await readSettings(paths)).autoUpdate ? "on" : "off"}`);
     break;
   }
+  case "profile": {
+    const requestedBaseUrl = option("base-url");
+    if (requestedBaseUrl) {
+      const profileBaseUrl = normalizeProfileBaseUrl(requestedBaseUrl);
+      if (!profileBaseUrl) {
+        console.error("Profile base URL must be an http or https URL without credentials, query, or fragment.");
+        process.exitCode = 1;
+        break;
+      }
+      await writeSettings({ profileBaseUrl }, paths);
+    }
+    const [settings, saved] = await Promise.all([readSettings(paths), readStatus(paths)]);
+    const profile = profileSnapshot(settings, saved || {});
+    if (json) console.log(JSON.stringify(profile));
+    else console.log(`Profile: ${profile.url || "not configured or waiting for Discord identity"}`);
+    break;
+  }
   case "more-metrics": {
     const requested = String(process.argv[3] || "status").toLowerCase();
     if (requested === "status") {
@@ -504,8 +521,9 @@ switch (command) {
   case "help":
   case "--help":
   case "-h":
-    console.log("Usage: punchcard <on|off|toggle|connect|status|doctor|restart|tray|startup|auto-update|more-metrics|update-check|update|app>");
+    console.log("Usage: punchcard <on|off|toggle|connect|status|doctor|restart|tray|startup|auto-update|more-metrics|profile|update-check|update|app>");
     console.log("       punchcard app --id ID");
+    console.log("       punchcard profile [--base-url URL]");
     break;
   case "version":
   case "--version":

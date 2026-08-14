@@ -53,6 +53,7 @@ punchcard on
 | `punchcard startup on\|off` | Control login startup |
 | `punchcard auto-update on\|off` | Opt in or out of automatic npm updates |
 | `punchcard more-metrics on\|off\|status` | Manage the separately installed optional extension |
+| `punchcard profile [--base-url URL]` | Show the resolved public profile URL or configure its host |
 | `punchcard update-check` | Check npm for a newer version |
 | `punchcard update` | Install the newest verified npm version |
 | `punchcard app --id ID` | Use a different Discord application ID |
@@ -82,7 +83,7 @@ Network access happens only for explicit or opt-in features: npm installation, u
 
 More Metrics is off by default and is not bundled with Punchcard. Enabling it installs the pinned `tag-plugin` package into Punchcard's managed local extensions directory with package scripts disabled. Removing it deletes that managed directory.
 
-This extension is a separate product with its own behavior and privacy boundary. Review [`tag-plugin` on npm](https://www.npmjs.com/package/tag-plugin) before enabling it. Once installed, Punchcard uses the public username from Discord's local READY event to open that account's `/{username}/stats` profile. The button stays hidden until Discord has supplied that identity.
+This extension is a separate product with its own behavior and privacy boundary. Review [`tag-plugin` on npm](https://www.npmjs.com/package/tag-plugin) before enabling it. Once installed, Punchcard can use the public username from Discord's local READY event to open that account's `/{username}/stats` profile. The button stays hidden until Discord has supplied that identity and a profile host has been configured with `punchcard profile --base-url URL`.
 
 ## Discord application
 

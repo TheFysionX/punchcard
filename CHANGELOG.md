@@ -12,6 +12,7 @@ All notable Punchcard changes are documented here. The project follows [Semantic
 - Stable elapsed timer that resets only after activity reaches zero.
 - Windows tray controls, cross-platform login startup, manual updates, and opt-in automatic updates.
 - Optional, separately installed More Metrics integration.
+- Optional profile handoff that resolves the current public Discord username locally and remains hidden until its extension and destination are configured.
 - Bounded runtime error logs, privacy documentation, package smoke tests, and npm trusted-publishing workflow.
 
 ### Privacy

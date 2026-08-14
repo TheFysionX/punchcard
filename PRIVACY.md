@@ -19,7 +19,7 @@ Parsing a JSONL record necessarily loads that local record in memory, but Punchc
 By default Punchcard writes under `~/.claude-codex-presence`:
 
 - `settings.json`: user preferences and Discord application ID.
-- `status.json`: the latest aggregate status and token totals.
+- `status.json`: the latest aggregate status and token totals. When More Metrics is enabled, it also holds the public Discord username/display name used for the optional profile link.
 - PID files for the daemon and Windows tray.
 - Small Claude activity markers, removed when work stops or becomes stale.
 - Update and optional-extension status files.
@@ -37,7 +37,7 @@ If More Metrics is enabled, its separately installed files live under `~/.claude
 | Update check | Manually, or daily after automatic updates are enabled | `registry.npmjs.org` | Package name and normal HTTPS request metadata |
 | Package update | Only after a manual update or opt-in automatic update finds a newer version | npm registry | Normal npm package-download metadata |
 | More Metrics install | Only after the user enables More Metrics | npm registry | Request for the pinned `tag-plugin` package |
-| Public profile | Only after an extension, base URL, and username are configured and the user clicks the button | The configured profile URL in the default browser | Username in the URL path and normal browser request metadata |
+| Public profile | Only after More Metrics is installed, a profile host is configured, Discord supplies its public username locally, and the user clicks the button | The configured Punchcard profile URL in the default browser | Public Discord username in the URL path and normal browser request metadata |
 
 The Discord client and any optional extension are separate software. Their own terms and privacy policies govern what they do after Punchcard hands them data or starts them.
 
