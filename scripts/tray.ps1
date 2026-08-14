@@ -186,6 +186,9 @@ $showWeeklyTokensToggle = New-Toggle "Show weekly token usage" 240
 $startupToggle = New-Toggle "Start with Windows" 280
 $autoUpdateToggle = New-Toggle "Automatic updates" 310
 $moreMetricsToggle = New-Toggle "More Metrics" 340
+$showProfileInStatusToggle = New-Toggle "Show my profile in my status" 368
+$showProfileInStatusToggle.Location = [System.Drawing.Point]::new(38, 368)
+$showProfileInStatusToggle.Visible = $false
 $panel.Controls.AddRange(@(
   $presenceToggle,
   $showAgentCountToggle,
@@ -193,7 +196,8 @@ $panel.Controls.AddRange(@(
   $showWeeklyTokensToggle,
   $startupToggle,
   $autoUpdateToggle,
-  $moreMetricsToggle
+  $moreMetricsToggle,
+  $showProfileInStatusToggle
 ))
 
 $moreMetricsStatusLabel = [System.Windows.Forms.Label]::new()
@@ -258,10 +262,27 @@ function Place-Panel {
 }
 
 function Show-Panel {
-  Place-Panel
   Update-Panel
+  Place-Panel
   $panel.Show()
   $panel.Activate()
+}
+
+function Set-MoreMetricsLayout([bool]$Expanded) {
+  $offset = if ($Expanded) { 30 } else { 0 }
+  $moreMetricsStatusLabel.Top = 368 + $offset
+  $viewProfileButton.Top = 397 + $offset
+  $checkButton.Top = 445 + $offset
+  $updateButton.Top = 445 + $offset
+  $updateStatusLabel.Top = 486 + $offset
+  $separator2.Top = 519 + $offset
+  $restartButton.Top = 531 + $offset
+  $quitButton.Top = 531 + $offset
+  $targetHeight = 577 + $offset
+  if ($panel.ClientSize.Height -ne $targetHeight) {
+    $panel.ClientSize = [System.Drawing.Size]::new(330, $targetHeight)
+    if ($panel.Visible) { Place-Panel }
+  }
 }
 
 function Update-Panel {
@@ -281,6 +302,13 @@ function Update-Panel {
   $autoUpdateToggle.Checked = $settings.autoUpdate -eq $true
   $moreMetricsToggle.Checked = $settings.moreMetrics -eq $true -or ($moreMetricsPending -and -not $moreMetricsRemoving)
   $moreMetricsToggle.Enabled = -not $moreMetricsPending
+  $moreMetricsExpanded = $moreMetricsToggle.Checked
+  $showProfileInStatusToggle.Visible = $moreMetricsExpanded
+  $showProfileInStatusToggle.Enabled = $settings.moreMetrics -eq $true -and
+    $moreMetricsStatus.state -eq "installed" -and
+    -not $moreMetricsPending
+  $showProfileInStatusToggle.Checked = $settings.moreMetrics -eq $true -and $settings.showProfileInStatus -eq $true
+  Set-MoreMetricsLayout $moreMetricsExpanded
   $script:suppressToggleEvents = $false
 
   if ($moreMetricsPending) {
@@ -304,11 +332,12 @@ function Update-Panel {
   $connected = $status.discordConnected -eq $true
   $connection.Text = if ($connected) { "Discord connected" } else { "Discord disconnected" }
   $connection.ForeColor = if ($connected) { [System.Drawing.Color]::FromArgb(87, 242, 135) } else { [System.Drawing.Color]::FromArgb(242, 87, 87) }
-  $connectButton.Visible = -not $connected
-  $connectButton.Enabled = -not $connected -and -not $script:connectRunning
-  $connectButton.Text = if ($script:connectRunning) { "Connecting..." } else { "Connect Discord" }
-  $connectItem.Visible = -not $connected
+  $connectButton.Visible = $true
+  $connectButton.Enabled = -not $script:connectRunning
+  $connectButton.Text = if ($script:connectRunning) { "Refreshing..." } elseif ($connected) { "Refresh Discord" } else { "Connect Discord" }
+  $connectItem.Visible = $true
   $connectItem.Enabled = -not $script:connectRunning
+  $connectItem.Text = if ($connected) { "Refresh Discord presence" } else { "Connect Discord" }
   if ($null -ne $status.activity) {
     $activity.Text = [string]$status.activity.details
     $activityState = [string]$status.activity.state
@@ -337,9 +366,9 @@ function Start-DiscordConnection {
   $script:connectRunning = $true
   $connectButton.Visible = $true
   $connectButton.Enabled = $false
-  $connectButton.Text = "Connecting..."
+  $connectButton.Text = "Refreshing..."
   $connectItem.Enabled = $false
-  $connection.Text = "Connecting..."
+  $connection.Text = "Refreshing Discord..."
   [System.Windows.Forms.Application]::DoEvents()
   [void](Invoke-Punchcard @("connect", "--json"))
   $script:connectRunning = $false
@@ -481,6 +510,11 @@ $moreMetricsToggle.add_CheckedChanged({
     return
   }
   Start-Sleep -Milliseconds 200
+  Update-Panel
+})
+$showProfileInStatusToggle.add_CheckedChanged({
+  if ($script:suppressToggleEvents) { return }
+  [void](Invoke-Punchcard @("profile-link", $(if ($showProfileInStatusToggle.Checked) { "on" } else { "off" })))
   Update-Panel
 })
 $viewProfileButton.add_Click({ Open-PublicProfile })

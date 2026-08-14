@@ -32,6 +32,7 @@ Support for more ADEs is planned for the immediate future.
 - Discord Rich Presence for Codex, Claude, or both at once
 - Active agent count
 - Daily and weekly token usage
+- Optional profile link on the Discord token line
 - Automatic Discord reconnection
 - Native Windows tray controls and login startup
 - Local-first tracking of usage and activity
@@ -55,6 +56,7 @@ Support for more ADEs is planned for the immediate future.
 | `punchcard display <agents\|daily\|weekly> <on\|off\|status>` | Manage the agent count and token totals shown in Discord |
 | `punchcard more-metrics <on\|off\|status>` | Manage the optional Advanced Metrics extension from the CLI |
 | `punchcard profile [--base-url URL]` | View the profile status or configure its host |
+| `punchcard profile-link <on\|off\|status>` | Control whether the Discord token line links to your profile |
 | `punchcard update-check` | Check for a newer version |
 | `punchcard update` | Install the newest available version |
 | `punchcard app [--id ID]` | View or change the Discord application ID |
@@ -74,6 +76,8 @@ Open the Punchcard mini dashboard from the Windows tray and click the **More Met
 </p>
 
 Punchcard installs [`punchcard-advanced-metrics`](https://www.npmjs.com/package/punchcard-advanced-metrics) in the background. Once connected, click **View profile** to open your dashboard. The companion package is maintained separately and is not part of this repository.
+
+After More Metrics is enabled, Punchcard shows a nested **Show my profile in my status** checkbox. It is off by default. Enabling it makes the token line in Discord clickable and sends people to your Punchcard profile. When it is off, Punchcard does not include a profile URL in the Discord activity.
 
 <p align="center">
   <img src="assets/punchcard-advanced-metrics.png" width="1000" alt="Punchcard Advanced Metrics dashboard">

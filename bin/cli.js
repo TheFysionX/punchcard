@@ -15,7 +15,7 @@ import { installClaudeHooks, removeClaudeHooks } from "../lib/claude-hooks.js";
 import { runTrayHost, runningTrayPid, startTrayDetached, stopTray } from "../lib/tray.js";
 import { checkForUpdate, isValidVersion } from "../lib/updater.js";
 import { findNpmCli } from "../lib/npm-cli.js";
-import { normalizeProfileBaseUrl, profileSnapshot } from "../lib/profile.js";
+import { normalizeProfileBaseUrl, profileSnapshot, profileStateUrl } from "../lib/profile.js";
 import {
   installMoreMetrics,
   readMoreMetricsStatus,
@@ -48,7 +48,7 @@ async function runningPid() {
   return isPidAlive(pid) ? pid : null;
 }
 
-async function startDetached() {
+async function startDetached(options = {}) {
   const existing = await runningPid();
   if (existing) return existing;
   const child = spawn(process.execPath, [cliPath, "run"], {
@@ -56,7 +56,12 @@ async function startDetached() {
     detached: true,
     stdio: "ignore",
     windowsHide: true,
-    env: process.env,
+    env: {
+      ...process.env,
+      ...(Number.isFinite(options.presenceStartedAt)
+        ? { PUNCHCARD_PRESENCE_STARTED_AT: String(options.presenceStartedAt) }
+        : {}),
+    },
   });
   child.unref();
   for (let i = 0; i < 20; i += 1) {
@@ -242,6 +247,7 @@ async function statusSnapshot() {
     showAgentCount: settings.showAgentCount,
     showDailyTokens: settings.showDailyTokens,
     showWeeklyTokens: settings.showWeeklyTokens,
+    stateUrl: profileStateUrl(settings, saved || {}),
   });
   return {
     version: packageMetadata.version,
@@ -378,9 +384,14 @@ switch (command) {
     await installClaudeHooks(paths);
     const settings = await readSettings(paths);
     if (settings.startAtLogin) await installAutostart();
+    const existingPid = await runningPid();
+    const currentStatus = existingPid ? await readStatus(paths) : null;
+    const carriedPresenceStartedAt = currentStatus?.pid === existingPid && currentStatus?.activity
+      ? Date.parse(currentStatus.presenceStartedAt)
+      : Number.NaN;
     await stopDaemon();
     const discordOpened = await openDiscordClient();
-    const pid = await startDetached();
+    const pid = await startDetached({ presenceStartedAt: carriedPresenceStartedAt });
     const connected = await waitForDiscordConnection(pid);
     const result = { connected, discordOpened, pid };
     if (json) console.log(JSON.stringify(result));
@@ -466,6 +477,31 @@ switch (command) {
     else console.log(`Profile: ${profile.url || "not configured or waiting for Discord identity"}`);
     break;
   }
+  case "profile-link": {
+    const requested = String(process.argv[3] || "status").toLowerCase();
+    if (requested !== "on" && requested !== "off" && requested !== "status") {
+      console.error("Usage: punchcard profile-link <on|off|status>");
+      process.exitCode = 1;
+      break;
+    }
+    const settings = await readSettings(paths);
+    if (requested === "on" && settings.moreMetrics !== true) {
+      console.error("Enable More Metrics before showing your profile in Discord.");
+      process.exitCode = 1;
+      break;
+    }
+    if (requested !== "status") {
+      await writeSettings({ showProfileInStatus: requested === "on" }, paths);
+    }
+    const updated = await readSettings(paths);
+    const result = {
+      available: updated.moreMetrics === true,
+      enabled: updated.moreMetrics === true && updated.showProfileInStatus === true,
+    };
+    if (json) console.log(JSON.stringify(result));
+    else console.log(`Profile link in Discord: ${result.enabled ? "on" : "off"}`);
+    break;
+  }
   case "more-metrics": {
     const requested = String(process.argv[3] || "status").toLowerCase();
     if (requested === "status") {
@@ -486,7 +522,10 @@ switch (command) {
       else console.log("More Metrics is already changing in the background.");
       break;
     }
-    await writeSettings({ moreMetricsPending: true }, paths);
+    await writeSettings({
+      moreMetricsPending: true,
+      ...(requested === "off" ? { showProfileInStatus: false } : {}),
+    }, paths);
     await writeMoreMetricsStatus(paths, { state: requested === "on" ? "queued-install" : "queued-remove" });
     const workerPid = startMoreMetricsWorker(requested);
     const result = { started: true, action: requested, workerPid };
@@ -502,12 +541,12 @@ switch (command) {
         await writeSettings({ moreMetrics: true, moreMetricsPending: false }, paths);
       } else if (action === "off") {
         await removeMoreMetrics(paths);
-        await writeSettings({ moreMetrics: false, moreMetricsPending: false }, paths);
+        await writeSettings({ moreMetrics: false, moreMetricsPending: false, showProfileInStatus: false }, paths);
       } else {
         throw new Error("Unknown More Metrics worker action");
       }
     } catch (error) {
-      await writeSettings({ moreMetrics: false, moreMetricsPending: false }, paths);
+      await writeSettings({ moreMetrics: false, moreMetricsPending: false, showProfileInStatus: false }, paths);
       if ((await readMoreMetricsStatus(paths)).state !== "failed") {
         await writeMoreMetricsStatus(paths, {
           state: "failed",
@@ -576,10 +615,11 @@ switch (command) {
   case "help":
   case "--help":
   case "-h":
-    console.log("Usage: punchcard <on|off|quit|toggle|connect|status|doctor|restart|tray|startup|auto-update|display|more-metrics|profile|update-check|update|app>");
+    console.log("Usage: punchcard <on|off|quit|toggle|connect|status|doctor|restart|tray|startup|auto-update|display|more-metrics|profile|profile-link|update-check|update|app>");
     console.log("       punchcard app --id ID");
     console.log("       punchcard display <agents|daily|weekly> <on|off|status>");
     console.log("       punchcard profile [--base-url URL]");
+    console.log("       punchcard profile-link <on|off|status>");
     break;
   case "version":
   case "--version":

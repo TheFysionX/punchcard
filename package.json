@@ -1,6 +1,6 @@
 {
   "name": "punchcard-presence",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Punchcard Discord Rich Presence and local AI usage tracking for Claude Code and Codex",
   "type": "module",
   "bin": {

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.2
+
+- Added an opt-in **Show my profile in my status** control beneath More Metrics.
+- The Discord token line links to the user's Punchcard profile only while that control is enabled. No profile URL is sent in the activity otherwise.
+- Disabling More Metrics now clears the profile-link preference automatically.
+- Discord refreshes preserve the current activity timer and remain available while connected.
+- Moved profile and More Metrics traffic to `app.punchcardai.workers.dev`.
+
 ## 1.0.1
 
 - More Metrics now uploads signed, content-free daily aggregates to Punchcard's Cloudflare D1 backend.

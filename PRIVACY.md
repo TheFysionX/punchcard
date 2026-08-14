@@ -33,12 +33,12 @@ If More Metrics is enabled, its separately installed files live under `~/.claude
 
 | Action | When it happens | Destination | Data involved |
 | --- | --- | --- | --- |
-| Discord Rich Presence | While Punchcard is enabled | Local Discord desktop IPC; Discord publishes the result | Platform label, active-agent count, token totals, elapsed start time, image key |
+| Discord Rich Presence | While Punchcard is enabled | Local Discord desktop IPC; Discord publishes the result | Platform label, active-agent count, token totals, elapsed start time, image key, and the public profile URL only when **Show my profile in my status** is enabled |
 | Update check | Manually, or daily after automatic updates are enabled | `registry.npmjs.org` | Package name and normal HTTPS request metadata |
 | Package update | Only after a manual update or opt-in automatic update finds a newer version | npm registry | Normal npm package-download metadata |
 | More Metrics install | Only after the user enables More Metrics | npm registry | Request for the pinned `punchcard-advanced-metrics` package |
-| More Metrics sync | Only while More Metrics is enabled | `app.theartificialgames.workers.dev` on Cloudflare | Discord user ID/username/display name; device public key and signature; daily Codex/Claude token, turn, active-time, provider, model, and service-mode counters |
-| Public profile | After the first More Metrics sync and when the user opens it | `app.theartificialgames.workers.dev` in the default browser | Public Discord username in the URL path and normal browser request metadata |
+| More Metrics sync | Only while More Metrics is enabled | `app.punchcardai.workers.dev` on Cloudflare | Discord user ID/username/display name; device public key and signature; daily Codex/Claude token, turn, active-time, provider, model, and service-mode counters |
+| Public profile | After the first More Metrics sync and when the user opens it | `app.punchcardai.workers.dev` in the default browser | Public Discord username in the URL path and normal browser request metadata |
 
 The Discord client and any optional extension are separate software. Their own terms and privacy policies govern what they do after Punchcard hands them data or starts them.
 
@@ -48,6 +48,7 @@ The Discord client and any optional extension are separate software. Their own t
 - `punchcard off` stops the daemon and tray, removes login startup, removes only Punchcard-tagged Claude hooks, and clears activity markers.
 - `punchcard auto-update off` disables automatic npm update checks.
 - `punchcard more-metrics off` removes the managed optional-extension directory.
+- `punchcard profile-link off` removes the profile URL from Discord activity without disabling More Metrics.
 
 Uninstalling the npm package does not itself remove startup configuration on every npm version. Run `punchcard off` first.
 
