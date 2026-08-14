@@ -254,6 +254,7 @@ $script:suppressToggleEvents = $false
 $script:updateRunning = $false
 $script:connectRunning = $false
 $script:lastAutoCheck = [DateTime]::MinValue
+$script:autoUpdateIntervalMinutes = 15
 
 function Place-Panel {
   $workingArea = [System.Windows.Forms.Screen]::FromPoint([System.Windows.Forms.Cursor]::Position).WorkingArea
@@ -327,7 +328,9 @@ function Update-Panel {
     -not [string]::IsNullOrWhiteSpace([string]$status.profile.url)
   $viewProfileButton.Visible = $profileReady
   $viewProfileButton.Enabled = $profileReady
+  $viewProfileButton.Text = if ($showProfileInStatusToggle.Checked) { "View public profile" } else { "View private insights" }
   $profileItem.Enabled = $profileReady
+  $profileItem.Text = $viewProfileButton.Text
 
   $connected = $status.discordConnected -eq $true
   $connection.Text = if ($connected) { "Discord connected" } else { "Discord disconnected" }
@@ -375,11 +378,14 @@ function Start-DiscordConnection {
   Update-Panel
 }
 
-function Open-PublicProfile {
-  $status = Read-JsonFile $StatusPath
-  $profileUrl = [string]$status.profile.url
-  if ([string]::IsNullOrWhiteSpace($profileUrl)) { return }
-  Start-Process $profileUrl
+function Open-Profile {
+  $raw = Invoke-Punchcard @("profile-open", "--json")
+  try {
+    $result = $raw | ConvertFrom-Json
+    if ($result.opened -ne $true) { throw [string]$result.error }
+  } catch {
+    [System.Windows.Forms.MessageBox]::Show("Punchcard could not open your insights right now.`n`n$raw", "Punchcard insights", "OK", "Warning") | Out-Null
+  }
 }
 
 function Check-ForUpdates([bool]$Automatic) {
@@ -387,7 +393,7 @@ function Check-ForUpdates([bool]$Automatic) {
   $checkButton.Enabled = $false
   $updateStatusLabel.Text = "Checking npm..."
   [System.Windows.Forms.Application]::DoEvents()
-  $raw = Invoke-Punchcard @("update-check", "--json")
+  $raw = Invoke-Punchcard @("update-check", "--current-version", $CurrentVersion, "--json")
   try {
     $update = $raw | ConvertFrom-Json
     if (-not [string]::IsNullOrWhiteSpace([string]$update.error)) {
@@ -427,7 +433,7 @@ function Start-Update {
   $updateButton.Enabled = $false
   $updateStatusLabel.Text = "Installing v$($script:latestVersion)..."
   [System.Windows.Forms.Application]::DoEvents()
-  $raw = Invoke-Punchcard @("update", "--json")
+  $raw = Invoke-Punchcard @("update", "--current-version", $CurrentVersion, "--json")
   try {
     $result = $raw | ConvertFrom-Json
     if ($result.updateStarted -eq $true) {
@@ -514,10 +520,20 @@ $moreMetricsToggle.add_CheckedChanged({
 })
 $showProfileInStatusToggle.add_CheckedChanged({
   if ($script:suppressToggleEvents) { return }
-  [void](Invoke-Punchcard @("profile-link", $(if ($showProfileInStatusToggle.Checked) { "on" } else { "off" })))
+  $requested = if ($showProfileInStatusToggle.Checked) { "on" } else { "off" }
+  $raw = Invoke-Punchcard @("profile-link", $requested, "--json")
+  try {
+    $result = $raw | ConvertFrom-Json
+    if (-not [string]::IsNullOrWhiteSpace([string]$result.error)) { throw [string]$result.error }
+  } catch {
+    $script:suppressToggleEvents = $true
+    $showProfileInStatusToggle.Checked = -not $showProfileInStatusToggle.Checked
+    $script:suppressToggleEvents = $false
+    [System.Windows.Forms.MessageBox]::Show("Punchcard could not change your profile privacy.`n`n$raw", "Punchcard privacy", "OK", "Warning") | Out-Null
+  }
   Update-Panel
 })
-$viewProfileButton.add_Click({ Open-PublicProfile })
+$viewProfileButton.add_Click({ Open-Profile })
 $checkButton.add_Click({ Check-ForUpdates $false })
 $updateButton.add_Click({ Start-Update })
 $connectButton.add_Click({ Start-DiscordConnection })
@@ -534,7 +550,7 @@ $quitButton.add_Click({
 })
 $openItem.add_Click({ Show-Panel })
 $connectItem.add_Click({ Start-DiscordConnection })
-$profileItem.add_Click({ Open-PublicProfile })
+$profileItem.add_Click({ Open-Profile })
 $pauseItem.add_Click({
   $settings = Read-JsonFile $SettingsPath
   [void](Invoke-Punchcard @($(if ($null -eq $settings -or $settings.enabled -ne $false) { "presence-off" } else { "presence-on" })))
@@ -548,7 +564,7 @@ $timer.Interval = 5000
 $timer.add_Tick({
   Update-Panel
   $settings = Read-JsonFile $SettingsPath
-  if ($settings.autoUpdate -eq $true -and ([DateTime]::UtcNow - $script:lastAutoCheck).TotalHours -ge 24) {
+  if ($settings.autoUpdate -eq $true -and ([DateTime]::UtcNow - $script:lastAutoCheck).TotalMinutes -ge $script:autoUpdateIntervalMinutes) {
     Check-ForUpdates $true
   }
 })

@@ -16,11 +16,11 @@ Parsing a JSONL record necessarily loads that local record in memory, but Punchc
 
 ## Data written locally
 
-By default Punchcard writes under `~/.claude-codex-presence`:
+By default Punchcard writes under `%USERPROFILE%\.claude-codex-presence` on Windows, `~/.claude-codex-presence` on Linux, and `~/Library/Application Support/Punchcard` on a new macOS installation. A macOS installation that already has the legacy `~/.claude-codex-presence` directory continues using it so an update does not silently split local state. `PUNCHCARD_HOME` is the preferred explicit override.
 
 - `settings.json`: user preferences and Discord application ID.
 - `status.json`: the latest aggregate status and token totals. When More Metrics is enabled, it also holds the Discord user ID, username, and display name used to bind uploads to the correct profile.
-- PID files for the daemon and Windows tray.
+- PID files for the daemon and Windows tray or macOS menu-bar host.
 - Small Claude activity markers, removed when work stops or becomes stale.
 - Update and optional-extension status files.
 - `daemon.log` and `tray.log` for startup and unexpected errors only.
@@ -33,8 +33,8 @@ If More Metrics is enabled, its separately installed files live under `~/.claude
 
 | Action | When it happens | Destination | Data involved |
 | --- | --- | --- | --- |
-| Discord Rich Presence | While Punchcard is enabled | Local Discord desktop IPC; Discord publishes the result | Platform label, active-agent count, token totals, elapsed start time, image key, and the public profile URL only when **Show my profile in my status** is enabled |
-| Update check | Manually, or daily after automatic updates are enabled | `registry.npmjs.org` | Package name and normal HTTPS request metadata |
+| Discord Rich Presence | While Punchcard is enabled | Local Discord desktop IPC; Discord publishes the result | Platform label, active-agent count, token totals, elapsed start time, image key |
+| Update check | Manually, or every 15 minutes after automatic updates are enabled | `registry.npmjs.org` | Package name and normal HTTPS request metadata |
 | Package update | Only after a manual update or opt-in automatic update finds a newer version | npm registry | Normal npm package-download metadata |
 | More Metrics install | Only after the user enables More Metrics | npm registry | Request for the pinned `punchcard-advanced-metrics` package |
 | More Metrics sync | Only while More Metrics is enabled | `app.punchcardai.workers.dev` on Cloudflare | Discord user ID/username/display name; device public key and signature; daily Codex/Claude token, turn, active-time, provider, model, and service-mode counters |
@@ -42,13 +42,14 @@ If More Metrics is enabled, its separately installed files live under `~/.claude
 
 The Discord client and any optional extension are separate software. Their own terms and privacy policies govern what they do after Punchcard hands them data or starts them.
 
+On macOS, default Claude and Codex records are under the user's hidden home directories rather than Desktop, Documents, Downloads, iCloud Drive, or network volumes. Punchcard does not request Full Disk Access. If a user deliberately relocates a configured source into a macOS privacy-protected folder, macOS may deny that read until the user grants the relevant Files and Folders permission.
+
 ## Controls
 
 - `punchcard presence-off` stops Discord activity while leaving the Windows tray available.
 - `punchcard off` stops the daemon and tray, removes login startup, removes only Punchcard-tagged Claude hooks, and clears activity markers.
 - `punchcard auto-update off` disables automatic npm update checks.
 - `punchcard more-metrics off` removes the managed optional-extension directory.
-- `punchcard profile-link off` removes the profile URL from Discord activity without disabling More Metrics.
 
 Uninstalling the npm package does not itself remove startup configuration on every npm version. Run `punchcard off` first.
 

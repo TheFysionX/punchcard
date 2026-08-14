@@ -1,0 +1,13 @@
+node_modules/
+coverage/
+*.tgz
+*.log
+*.pid
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+.claude-codex-presence/
+tools/live-debug.mjs
+tools/open-live-debug.ps1
