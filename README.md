@@ -4,7 +4,7 @@
 
 # Punchcard
 
-Punchcard is a lightweight Discord Rich Presence for your Agentic Development Environments (ADEs). It shows when you are working with an ADE, how many agents are active, and how many tokens you have used.
+Punchcard is a completely free, lightweight Discord Rich Presence for your Agentic Development Environments (ADEs). No API key, account, or setup is required. It shows when you are working with an ADE, how many agents are active, and how many tokens you have used.
 
 <p align="center">
   <img src="assets/punchcard-discord-presence.png" width="405" alt="Punchcard activity displayed in Discord">
@@ -24,7 +24,7 @@ If you would prefer to use an agent or AI, paste this:
 Read https://github.com/TheFysionX/punchcard and install Punchcard.
 ```
 
-Punchcard starts automatically after installation. No API key, bot token, or Punchcard account is required.
+Punchcard starts automatically after installation.
 
 ### Supported platforms
 
