@@ -37,8 +37,18 @@ try {
   const packed = JSON.parse(packedOutput)[0];
   if (!packed?.filename) fail("npm pack did not return a tarball filename");
 
-  const allowedFiles = new Set(["package.json", "README.md", "LICENSE", "CHANGELOG.md", "PRIVACY.md", "SECURITY.md"]);
-  const allowedDirectories = ["assets/", "bin/", "docs/", "lib/", "scripts/"];
+  const allowedFiles = new Set([
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "docs/MACOS.md",
+    "docs/PRIVACY.md",
+    "scripts/postinstall.cjs",
+    "scripts/tray.ps1",
+    "scripts/tray-macos.js",
+  ]);
+  const allowedDirectories = ["bin/", "lib/"];
   for (const entry of packed.files || []) {
     const normalized = entry.path.replaceAll("\\", "/");
     if (!allowedFiles.has(normalized) && !allowedDirectories.some((prefix) => normalized.startsWith(prefix))) {
@@ -56,13 +66,19 @@ try {
     "bin/cli.js",
     "lib/daemon.js",
     "lib/platform.js",
+    "scripts/postinstall.cjs",
+    "scripts/tray.ps1",
     "scripts/tray-macos.js",
     "docs/MACOS.md",
-    "assets/punchcard.png",
+    "docs/PRIVACY.md",
   ]) {
     if (!(packed.files || []).some((entry) => entry.path.replaceAll("\\", "/") === required)) {
       fail(`Required npm file is missing: ${required}`);
     }
+  }
+
+  if (packed.unpackedSize > 300_000) {
+    fail(`npm tarball is unexpectedly large (${packed.unpackedSize} bytes); review the package allowlist`);
   }
 
   const tarball = path.join(temporary, packed.filename);

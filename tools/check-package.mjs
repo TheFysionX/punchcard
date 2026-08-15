@@ -35,9 +35,27 @@ assert(metadata.publishConfig?.access === "public", "The package must publish pu
 assert(!metadata.dependencies || Object.keys(metadata.dependencies).length === 0, "Runtime dependencies require an explicit release review");
 assert(!metadata.optionalDependencies || Object.keys(metadata.optionalDependencies).length === 0, "Optional npm dependencies require an explicit release review");
 
-for (const required of ["README.md", "LICENSE", "CHANGELOG.md", "PRIVACY.md", "SECURITY.md"]) {
-  assert(metadata.files.includes(required), `${required} is missing from the npm allowlist`);
+const expectedPackageFiles = [
+  "bin",
+  "lib",
+  "scripts/postinstall.cjs",
+  "scripts/tray.ps1",
+  "scripts/tray-macos.js",
+  "docs/MACOS.md",
+  "docs/PRIVACY.md",
+  "README.md",
+  "LICENSE",
+  "CHANGELOG.md",
+];
+assert(
+  JSON.stringify([...metadata.files].sort()) === JSON.stringify([...expectedPackageFiles].sort()),
+  "The npm allowlist changed; review every added or removed package path",
+);
+for (const required of expectedPackageFiles.filter((entry) => !["bin", "lib"].includes(entry))) {
   await fs.access(path.join(root, required));
+}
+for (const communityFile of ["CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "SECURITY.md", "SUPPORT.md"]) {
+  await fs.access(path.join(root, ".github", communityFile));
 }
 
 const sourceRoots = ["bin", "lib", "scripts", "test", "tools"];
@@ -78,7 +96,7 @@ if (process.platform === "darwin") {
   }
 }
 
-for (const relativePath of ["bin", "lib", "scripts", "README.md", "PRIVACY.md"]) {
+for (const relativePath of ["bin", "lib", "scripts", "README.md", "docs/PRIVACY.md"]) {
   const target = path.join(root, relativePath);
   const files = (await fs.stat(target)).isDirectory() ? await walk(target) : [target];
   for (const file of files.filter((file) => !file.endsWith(".png"))) {

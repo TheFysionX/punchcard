@@ -1,6 +1,6 @@
 # Architecture
 
-Punchcard is deliberately small and dependency-free. The global npm package contains one CLI, a background Node.js daemon, a Windows PowerShell tray, a macOS AppKit menu implemented with the system JXA runtime, local product adapters, and static assets.
+Punchcard is deliberately small and dependency-free. The global npm package contains one CLI, a background Node.js daemon, a Windows PowerShell tray, a macOS AppKit menu implemented with the system JXA runtime, and local product adapters.
 
 ## Runtime flow
 

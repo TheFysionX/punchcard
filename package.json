@@ -16,14 +16,14 @@
   "files": [
     "bin",
     "lib",
-    "scripts",
-    "assets",
-    "docs",
+    "scripts/postinstall.cjs",
+    "scripts/tray.ps1",
+    "scripts/tray-macos.js",
+    "docs/MACOS.md",
+    "docs/PRIVACY.md",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md",
-    "PRIVACY.md",
-    "SECURITY.md"
+    "CHANGELOG.md"
   ],
   "keywords": [
     "discord",
