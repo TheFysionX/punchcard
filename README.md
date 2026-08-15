@@ -14,7 +14,7 @@ Punchcard is a completely free, lightweight Discord Rich Presence for your Agent
 
 Requires [Node.js 18 or newer](https://nodejs.org/) and the Discord desktop app.
 
-Punchcard supports Windows, macOS, and headless Linux desktop sessions. macOS uses a native AppKit menu-bar item and a user LaunchAgent; see the [macOS verification guide](docs/MACOS.md) for the final on-device checklist.
+Punchcard supports Windows, macOS, and headless Linux desktop sessions. macOS uses a native AppKit menu-bar item and a user LaunchAgent; see the [macOS support guide](docs/MACOS.md) for platform details and troubleshooting checks.
 
 ```sh
 npm install -g punchcard-presence

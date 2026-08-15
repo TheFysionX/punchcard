@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [1.0.6] - 2026-08-14
 
 - Add an AppKit macOS menu-bar interface with all Punchcard settings and controls.
 - Replace the always-running macOS LaunchAgent with a crash-only restart supervisor so Quit stays closed until the next login or manual start.
@@ -53,3 +53,4 @@ All notable Punchcard changes are documented here. The project follows [Semantic
 - Dead localhost profile defaults were removed; the profile action is hidden until explicitly configured.
 
 [1.0.0]: https://github.com/TheFysionX/punchcard/releases/tag/v1.0.0
+[1.0.6]: https://github.com/TheFysionX/punchcard/releases/tag/v1.0.6
