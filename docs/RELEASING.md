@@ -1,6 +1,6 @@
 # Releasing Punchcard
 
-Punchcard uses a public GitHub repository, npm package allowlisting, CI across supported operating systems and Node.js versions, and npm trusted publishing for releases after the first publish.
+Punchcard uses a public GitHub repository, an explicit npm package allowlist, and CI across supported operating systems and Node.js versions. Releases support npm trusted publishing after the npm-side publisher mapping is configured.
 
 ## One-time repository setup
 
@@ -49,7 +49,7 @@ npm view punchcard-presence version dist.integrity repository --json
 npx --yes punchcard-presence help
 ```
 
-Confirm that the GitHub release, npm version, changelog entry, and provenance all refer to the same commit and semantic version.
+Confirm that the GitHub release, npm version, and changelog entry refer to the same commit and semantic version. For trusted-publisher releases, verify the provenance statement as well.
 
 ## Bad release
 

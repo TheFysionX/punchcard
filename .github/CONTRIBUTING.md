@@ -26,7 +26,7 @@ Keep fixtures synthetic. Never commit real Codex or Claude transcripts, account 
 
 - Keep activity counting evidence-based; an open application is not automatically an active agent.
 - Preserve exact rolling token calculations. Do not estimate the week from today's rate.
-- Keep network behavior opt-in and document any new destination or disclosed field in `PRIVACY.md`.
+- Keep network behavior opt-in and document any new destination or disclosed field in `docs/PRIVACY.md`.
 - Do not make tests depend on a live Discord client or mutate the developer's real Codex/Claude directories.
 - Update `CHANGELOG.md` for user-visible changes.
 

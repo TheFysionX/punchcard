@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/punchcard.svg" width="150" alt="Punchcard logo">
+  <img src="https://raw.githubusercontent.com/TheFysionX/punchcard/main/docs/images/punchcard.svg" width="150" alt="Punchcard logo">
 </p>
 
 # Punchcard
@@ -7,7 +7,7 @@
 Punchcard is a completely free, lightweight Discord Rich Presence for your Agentic Development Environments (ADEs). No API key, account, or setup is required. It shows when you are working with an ADE, how many agents are active, and how many tokens you have used.
 
 <p align="center">
-  <img src="assets/punchcard-discord-presence.png" width="405" alt="Punchcard activity displayed in Discord">
+  <img src="https://raw.githubusercontent.com/TheFysionX/punchcard/main/docs/images/punchcard-discord-presence.png" width="405" alt="Punchcard activity displayed in Discord">
 </p>
 
 ## Installing
@@ -67,17 +67,15 @@ Advanced Metrics is optional, disabled by default, and distributed separately fr
 Open Punchcard from the Windows tray or macOS menu bar and click the **More Metrics** checkbox highlighted below.
 
 <p align="center">
-  <img src="assets/punchcard-mini-dashboard.png" width="368" alt="More Metrics checkbox highlighted in the Punchcard mini dashboard">
+  <img src="https://raw.githubusercontent.com/TheFysionX/punchcard/main/docs/images/punchcard-mini-dashboard.png" width="368" alt="More Metrics checkbox highlighted in the Punchcard mini dashboard">
 </p>
 
 Punchcard installs [`punchcard-advanced-metrics`](https://www.npmjs.com/package/punchcard-advanced-metrics) in the background. Once connected, click **View profile** to open your dashboard. The companion package is maintained separately and is not part of this repository.
 
 After More Metrics is enabled, Punchcard shows a nested **Show my profile in my status** checkbox. It is off by default. Enabling it makes the token line in Discord clickable and sends people to your Punchcard profile. When it is off, Punchcard does not include a profile URL in the Discord activity.
 
-<p align="center">
-  <img src="assets/punchcard-advanced-metrics.png" width="1000" alt="Punchcard Advanced Metrics dashboard">
-</p>
-
 To disable Advanced Metrics, clear the **More Metrics** checkbox in the mini dashboard.
 
 Punchcard is independent and is not affiliated with Anthropic, OpenAI, or Discord. Released under the [MIT License](LICENSE).
+
+[Privacy](docs/PRIVACY.md) · [Security](.github/SECURITY.md) · [Contributing](.github/CONTRIBUTING.md) · [Support](.github/SUPPORT.md)
