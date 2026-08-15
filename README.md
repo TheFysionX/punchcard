@@ -14,6 +14,8 @@ Punchcard is a completely free, lightweight Discord Rich Presence for your Agent
 
 Requires [Node.js 18 or newer](https://nodejs.org/) and the Discord desktop app.
 
+Punchcard supports Windows, macOS, and headless Linux desktop sessions. macOS uses a native AppKit menu-bar item and a user LaunchAgent; see the [macOS support guide](docs/MACOS.md) for platform details and troubleshooting checks.
+
 ```sh
 npm install -g punchcard-presence
 ```
@@ -40,7 +42,7 @@ Support for more ADEs is planned for the immediate future.
 - Daily and weekly token usage
 - Optional profile link on the Discord token line
 - Automatic Discord reconnection
-- Native Windows tray controls and login startup
+- Native Windows tray or macOS menu-bar controls and login startup
 - Local-first tracking of usage and activity
 
 ## Commands
@@ -55,14 +57,14 @@ Punchcard starts automatically. These are the only commands most people may need
 | `punchcard connect` | Open Discord if needed and reconnect Punchcard |
 | `punchcard status` | View the current connection, agent, and usage status |
 | `punchcard restart` | Restart the daemon and tray |
-| `punchcard tray --show` | Open the Windows mini dashboard |
+| `punchcard tray --show` | Open the Windows tray panel or macOS menu-bar item |
 | `punchcard help` | Show command-line help |
 
 ## Advanced Metrics
 
 Advanced Metrics is optional, disabled by default, and distributed separately from the core presence package.
 
-Open the Punchcard mini dashboard from the Windows tray and click the **More Metrics** checkbox highlighted below.
+Open Punchcard from the Windows tray or macOS menu bar and click the **More Metrics** checkbox highlighted below.
 
 <p align="center">
   <img src="assets/punchcard-mini-dashboard.png" width="368" alt="More Metrics checkbox highlighted in the Punchcard mini dashboard">

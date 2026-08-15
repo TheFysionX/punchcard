@@ -1,0 +1,34 @@
+name: Feature request
+description: Propose a focused Punchcard improvement
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What concrete limitation are you running into?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the smallest behavior that would solve it.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Available local evidence
+      description: Which stable local events, files, or process states could support this without estimation?
+  - type: dropdown
+    id: boundary
+    attributes:
+      label: Does this add network access or new stored data?
+      options:
+        - "No"
+        - "Yes"
+        - "Unsure"
+    validations:
+      required: true

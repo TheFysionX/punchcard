@@ -15,13 +15,21 @@ import { installClaudeHooks, removeClaudeHooks } from "../lib/claude-hooks.js";
 import { runTrayHost, runningTrayPid, startTrayDetached, stopTray } from "../lib/tray.js";
 import { checkForUpdate, isValidVersion } from "../lib/updater.js";
 import { findNpmCli } from "../lib/npm-cli.js";
+import { platformSnapshot } from "../lib/platform.js";
 import { normalizeProfileBaseUrl, profileSnapshot, profileStateUrl } from "../lib/profile.js";
 import {
   installMoreMetrics,
   readMoreMetricsStatus,
   removeMoreMetrics,
+  setProfileVisibility,
   writeMoreMetricsStatus,
 } from "../lib/more-metrics.js";
+import {
+  appendPrivateDashboardError,
+  openExternal,
+  runPrivateDashboard,
+  startPrivateDashboardDetached,
+} from "../lib/private-dashboard.js";
 
 const paths = appPaths();
 const cliPath = fileURLToPath(import.meta.url);
@@ -126,7 +134,17 @@ async function waitForDiscordConnection(pid, timeoutMs = 15_000) {
 }
 
 async function updateSnapshot() {
-  return checkForUpdate({ packageName: packageMetadata.name, currentVersion: packageMetadata.version });
+  const reportedVersion = option("current-version");
+  const currentVersion = reportedVersion || packageMetadata.version;
+  if (!isValidVersion(currentVersion)) {
+    return {
+      currentVersion: packageMetadata.version,
+      latestVersion: null,
+      updateAvailable: false,
+      error: "Punchcard reported an invalid running version",
+    };
+  }
+  return checkForUpdate({ packageName: packageMetadata.name, currentVersion });
 }
 
 async function writeUpdateStatus(status) {
@@ -205,12 +223,13 @@ async function moreMetricsSnapshot() {
 }
 
 async function statusSnapshot() {
-  const [settings, pid, trayPid, saved, moreMetrics] = await Promise.all([
+  const [settings, pid, trayPid, saved, moreMetrics, system] = await Promise.all([
     readSettings(paths),
     runningPid(),
     runningTrayPid(paths),
     readStatus(paths),
     readMoreMetricsStatus(paths),
+    platformSnapshot(paths),
   ]);
   const moreMetricsSnapshot = {
     enabled: settings.moreMetrics === true,
@@ -220,6 +239,7 @@ async function statusSnapshot() {
   if (pid && saved) {
     return {
       version: packageMetadata.version,
+      system,
       enabled: settings.enabled,
       running: true,
       trayRunning: Boolean(trayPid),
@@ -251,6 +271,7 @@ async function statusSnapshot() {
   });
   return {
     version: packageMetadata.version,
+    system,
     enabled: settings.enabled,
     running: Boolean(pid),
     trayRunning: Boolean(trayPid),
@@ -284,6 +305,12 @@ function printStatus(snapshot) {
     return;
   }
   console.log(`Punchcard v${snapshot.version || packageMetadata.version}: ${snapshot.enabled ? "on" : "off"}${snapshot.running ? ` (pid ${snapshot.pid})` : ""}`);
+  console.log(`System: ${snapshot.system?.platform || process.platform} ${snapshot.system?.arch || process.arch}; ${snapshot.system?.interface || "unknown interface"}; ${snapshot.system?.node || process.version}`);
+  if (snapshot.system?.macos) {
+    const missing = Object.entries(snapshot.system.macos.tools).filter(([, tool]) => !tool.available).map(([name]) => name);
+    console.log(`macOS prerequisites: ${missing.length ? `missing ${missing.join(", ")}` : "ready"}`);
+    console.log(`LaunchAgent: ${snapshot.system.macos.launchAgent.available ? `installed (${snapshot.system.macos.launchAgent.mode}); ${snapshot.system.macos.launchAgent.loaded ? "loaded" : "not loaded"}` : "not installed"}`);
+  }
   console.log(`Discord: ${snapshot.discordConnected ? "connected" : "not connected"}`);
   console.log(`Tray: ${snapshot.trayRunning ? `running (pid ${snapshot.trayPid})` : "not running"}`);
   console.log(`Detected: ${snapshot.vendors?.claude ? "Claude" : ""}${snapshot.vendors?.claude && snapshot.vendors?.codex ? " + " : ""}${snapshot.vendors?.codex ? "Codex" : ""}${!snapshot.vendors?.claude && !snapshot.vendors?.codex ? "none" : ""}`);
@@ -342,7 +369,7 @@ switch (command) {
   case "quit": {
     await stopDaemon();
     if (!process.argv.includes("--from-tray")) await stopTray(paths);
-    console.log("Punchcard closed. Start with Windows remains unchanged.");
+    console.log("Punchcard closed. Start-at-login remains unchanged.");
     break;
   }
   case "toggle": {
@@ -407,6 +434,7 @@ switch (command) {
     break;
   }
   case "tray-host":
+    if (process.argv.includes("--login") && (await readSettings(paths)).enabled) await startDetached();
     await runTrayHost(paths, { showOnStart: process.argv.includes("--show") });
     break;
   case "startup": {
@@ -414,9 +442,13 @@ switch (command) {
     if (String(process.argv[3] || "status").toLowerCase() !== "status") {
       await writeSettings({ startAtLogin: enabled }, paths);
       if (enabled) await installAutostart();
-      else await removeAutostart();
+      else {
+        const preserveTray = process.platform === "darwin" && Boolean(await runningTrayPid(paths));
+        await removeAutostart();
+        if (preserveTray) await startTrayDetached(paths);
+      }
     }
-    console.log(`Start with Windows: ${(await readSettings(paths)).startAtLogin ? "on" : "off"}`);
+    console.log(`Start at login: ${(await readSettings(paths)).startAtLogin ? "on" : "off"}`);
     break;
   }
   case "auto-update": {
@@ -477,6 +509,41 @@ switch (command) {
     else console.log(`Profile: ${profile.url || "not configured or waiting for Discord identity"}`);
     break;
   }
+  case "profile-open": {
+    const [settings, saved] = await Promise.all([readSettings(paths), readStatus(paths)]);
+    const profile = profileSnapshot(settings, saved || {});
+    if (settings.moreMetrics !== true || !profile.url) {
+      const result = { opened: false, error: "Enable More Metrics and connect Discord first." };
+      if (json) console.log(JSON.stringify(result));
+      else console.error(result.error);
+      process.exitCode = 1;
+      break;
+    }
+    if (settings.showProfileInStatus === true) {
+      const opened = openExternal(profile.url);
+      const result = { opened, mode: "public", url: profile.url };
+      if (json) console.log(JSON.stringify(result));
+      else console.log(opened ? "Opened your public Punchcard profile." : `Public profile: ${profile.url}`);
+    } else {
+      const workerPid = startPrivateDashboardDetached({ cliPath, cwd: paths.home });
+      const result = { opened: true, mode: "private", workerPid };
+      if (json) console.log(JSON.stringify(result));
+      else console.log(`Opening your private Punchcard insights locally (pid ${workerPid}).`);
+    }
+    break;
+  }
+  case "private-dashboard": {
+    try {
+      const [settings, saved] = await Promise.all([readSettings(paths), readStatus(paths)]);
+      const profile = profileSnapshot(settings, saved || {});
+      if (settings.moreMetrics !== true || !profile.username) throw new Error("Private insights are not ready yet");
+      await runPrivateDashboard(paths, { username: profile.username, baseUrl: profile.baseUrl });
+    } catch (error) {
+      await appendPrivateDashboardError(paths, error);
+      process.exitCode = 1;
+    }
+    break;
+  }
   case "profile-link": {
     const requested = String(process.argv[3] || "status").toLowerCase();
     if (requested !== "on" && requested !== "off" && requested !== "status") {
@@ -491,7 +558,20 @@ switch (command) {
       break;
     }
     if (requested !== "status") {
-      await writeSettings({ showProfileInStatus: requested === "on" }, paths);
+      try {
+        await setProfileVisibility(paths, requested === "on", { baseUrl: settings.profileBaseUrl });
+        await writeSettings({ showProfileInStatus: requested === "on" }, paths);
+      } catch (error) {
+        const result = {
+          available: true,
+          enabled: settings.showProfileInStatus === true,
+          error: error instanceof Error ? error.message : "Profile visibility could not be changed",
+        };
+        if (json) console.log(JSON.stringify(result));
+        else console.error(result.error);
+        process.exitCode = 1;
+        break;
+      }
     }
     const updated = await readSettings(paths);
     const result = {
@@ -540,13 +620,20 @@ switch (command) {
         await installMoreMetrics(paths);
         await writeSettings({ moreMetrics: true, moreMetricsPending: false }, paths);
       } else if (action === "off") {
+        try {
+          await setProfileVisibility(paths, false);
+        } catch (error) {
+          if (!String(error?.message || error).includes("not paired")) throw error;
+        }
         await removeMoreMetrics(paths);
         await writeSettings({ moreMetrics: false, moreMetricsPending: false, showProfileInStatus: false }, paths);
       } else {
         throw new Error("Unknown More Metrics worker action");
       }
     } catch (error) {
-      await writeSettings({ moreMetrics: false, moreMetricsPending: false, showProfileInStatus: false }, paths);
+      await writeSettings(action === "off"
+        ? { moreMetrics: true, moreMetricsPending: false }
+        : { moreMetrics: false, moreMetricsPending: false, showProfileInStatus: false }, paths);
       if ((await readMoreMetricsStatus(paths)).state !== "failed") {
         await writeMoreMetricsStatus(paths, {
           state: "failed",
@@ -559,6 +646,12 @@ switch (command) {
   }
   case "update-check": {
     const update = await updateSnapshot();
+    await writeUpdateStatus({
+      state: update.error ? "check-failed" : update.updateAvailable ? "available" : "current",
+      targetVersion: update.latestVersion,
+      currentVersion: update.currentVersion,
+      error: update.error || null,
+    });
     if (json) console.log(JSON.stringify(update));
     else if (update.error) console.log(`Update check unavailable: ${update.error}`);
     else if (update.updateAvailable) console.log(`Punchcard ${update.latestVersion} is available (current ${update.currentVersion}).`);
@@ -615,7 +708,7 @@ switch (command) {
   case "help":
   case "--help":
   case "-h":
-    console.log("Usage: punchcard <on|off|quit|toggle|connect|status|doctor|restart|tray|startup|auto-update|display|more-metrics|profile|profile-link|update-check|update|app>");
+    console.log("Usage: punchcard <on|off|quit|toggle|connect|status|doctor|restart|tray|startup|auto-update|display|more-metrics|profile|profile-open|profile-link|update-check|update|app>");
     console.log("       punchcard app --id ID");
     console.log("       punchcard display <agents|daily|weekly> <on|off|status>");
     console.log("       punchcard profile [--base-url URL]");

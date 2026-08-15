@@ -1,0 +1,66 @@
+name: Bug report
+description: Report reproducible incorrect behavior in Punchcard
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not attach Codex or Claude transcript files, prompts, source code, credentials, or private paths. Sanitize all diagnostics.
+  - type: input
+    id: version
+    attributes:
+      label: Punchcard version
+      description: Run `punchcard --version` and provide the result.
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: input
+    id: products
+    attributes:
+      label: Products and versions
+      description: Include Node.js plus the Claude Code and/or Codex versions involved.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Use synthetic data when a fixture is needed.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Sanitized diagnostics
+      description: Optional sanitized output from `punchcard status --json`. Do not include transcript contents.
+      render: shell
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed prompts, credentials, source code, usernames, and private paths.
+          required: true

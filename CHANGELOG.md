@@ -1,12 +1,29 @@
 # Changelog
 
+## [1.0.6] - 2026-08-14
+
+- Add an AppKit macOS menu-bar interface with all Punchcard settings and controls.
+- Replace the always-running macOS LaunchAgent with a crash-only restart supervisor so Quit stays closed until the next login or manual start.
+- Add current and legacy Codex state database discovery, macOS-safe process parsing, Application Support state storage with legacy continuity, and Unix npm-prefix discovery.
+- Add macOS platform diagnostics plus generated-plist and JXA compilation checks on macOS CI.
+- Pass launchd-safe Codex executable discovery into the optional Advanced Metrics collector.
+
+## 1.0.5
+
+- Count Codex desktop sidechat tabs as agents even though the app does not create rollout files or spawn-edge rows for them.
+
+## 1.0.4
+
+- Automatic updates now check every 15 minutes instead of once per day.
+- Update checks use the tray's actual running version, so an updated package on disk cannot leave older live processes undetected.
+
+## 1.0.3
+
+- Updated More Metrics to `punchcard-advanced-metrics@1.0.1` for evidence-aware speed classification, safe historical replacement uploads, and improved model attribution.
+
 ## 1.0.2
 
-- Added an opt-in **Show my profile in my status** control beneath More Metrics.
-- The Discord token line links to the user's Punchcard profile only while that control is enabled. No profile URL is sent in the activity otherwise.
-- Disabling More Metrics now clears the profile-link preference automatically.
-- Discord refreshes preserve the current activity timer and remain available while connected.
-- Moved profile and More Metrics traffic to `app.punchcardai.workers.dev`.
+- Moved Punchcard profile and More Metrics synchronization to `app.punchcardai.workers.dev`.
 
 ## 1.0.1
 
@@ -36,3 +53,4 @@ All notable Punchcard changes are documented here. The project follows [Semantic
 - Dead localhost profile defaults were removed; the profile action is hidden until explicitly configured.
 
 [1.0.0]: https://github.com/TheFysionX/punchcard/releases/tag/v1.0.0
+[1.0.6]: https://github.com/TheFysionX/punchcard/releases/tag/v1.0.6
