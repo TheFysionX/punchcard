@@ -13,6 +13,7 @@ test("Quit closes the current session without disabling Punchcard", async () => 
   ]);
   const quitCase = cli.match(/case "quit": \{([\s\S]*?)\n  \}\n  case "toggle":/u)?.[1] || "";
 
+  assert.match(quitCase, /await requestTrayExit\(paths\);/u);
   assert.match(quitCase, /await stopDaemon\(\);/u);
   assert.match(quitCase, /if \(!process\.argv\.includes\("--from-tray"\)\) await stopTray\(paths\);/u);
   assert.doesNotMatch(quitCase, /writeSettings|removeAutostart|removeClaudeHooks|clearClaudeActivity/u);

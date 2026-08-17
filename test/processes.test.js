@@ -42,5 +42,6 @@ test("detects the Codex desktop app separately from Codex CLI agents", () => {
     },
   ]);
   assert.equal(result.codexDesktopOpen, true);
+  assert.deepEqual(result.codexDesktopPids, [10]);
   assert.equal(result.codexCliAgents, 0);
 });

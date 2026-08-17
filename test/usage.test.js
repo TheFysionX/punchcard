@@ -67,9 +67,9 @@ test("aggregates Codex deltas and deduplicates Claude message snapshots", async 
   assert.equal(snapshot.codexTokensWeek, 1_219);
   assert.equal(snapshot.claudeTokensWeek, 122);
   assert.equal(snapshot.totalTokensWeek, 1_341);
-  assert.equal(snapshot.codexActiveAgents, 2);
+  assert.equal(snapshot.codexActiveAgents, 1);
   assert.equal(snapshot.codexMainAgents, 1);
-  assert.equal(snapshot.codexSubagents, 1);
+  assert.equal(snapshot.codexSubagents, 0);
 });
 
 test("counts an open idle sidechat after its current turn completes", async (t) => {
@@ -104,7 +104,7 @@ test("counts an open idle sidechat after its current turn completes", async (t) 
   assert.equal(snapshot.codexActiveAgents, 2);
 });
 
-test("counts desktop sidechat tabs that do not have rollout or spawn-edge records", async (t) => {
+test("counts active desktop turns that do not have rollout or spawn-edge records", async (t) => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "cc-presence-ui-sidechat-test-"));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   const codexSessions = path.join(root, "codex");
@@ -123,7 +123,9 @@ test("counts desktop sidechat tabs that do not have rollout or spawn-edge record
     { codexSessions, claudeProjects },
     {
       readCodexSidechats: async () => ({ available: true, ids: new Set() }),
-      readCodexUiSidechats: async () => ({ available: true, ids: new Set(["ui-sidechat-a", "ui-sidechat-b"]) }),
+      codexDesktopActivity: {
+        refresh: async () => ({ available: true, ids: new Set(["desktop-sidechat-a", "desktop-sidechat-b"]) }),
+      },
     },
   );
   const snapshot = await telemetry.refresh(now, { codexDesktopOpen: true });
@@ -149,12 +151,14 @@ test("counts an active desktop sidechat while its parent main task is idle", asy
   ].join("\n"));
 
   const telemetry = new LocalTelemetry(
-    { codexSessions, claudeProjects, codexGlobalState: path.join(root, "global-state.json") },
+    { codexSessions, claudeProjects },
     {
       readCodexSidechats: async () => ({ available: false, ids: new Set() }),
-      readCodexUiSidechats: async (_globalStatePath, codexDesktopOpen) => {
-        assert.equal(codexDesktopOpen, true);
-        return { available: true, ids: new Set(["active-ui-sidechat"]) };
+      codexDesktopActivity: {
+        refresh: async (_now, options) => {
+          assert.equal(options.codexDesktopOpen, true);
+          return { available: true, ids: new Set(["active-desktop-sidechat"]) };
+        },
       },
     },
   );
@@ -162,6 +166,29 @@ test("counts an active desktop sidechat while its parent main task is idle", asy
   assert.equal(snapshot.codexMainAgents, 0);
   assert.equal(snapshot.codexSubagents, 1);
   assert.equal(snapshot.codexActiveAgents, 1);
+});
+
+test("does not count a selected desktop sidechat after its turn completes", async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "cc-presence-idle-desktop-sidechat-test-"));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const codexSessions = path.join(root, "codex");
+  const claudeProjects = path.join(root, "claude");
+  await fs.mkdir(codexSessions, { recursive: true });
+  await fs.mkdir(claudeProjects, { recursive: true });
+
+  const telemetry = new LocalTelemetry(
+    { codexSessions, claudeProjects },
+    {
+      readCodexSidechats: async () => ({ available: false, ids: new Set() }),
+      codexDesktopActivity: {
+        refresh: async () => ({ available: true, ids: new Set() }),
+      },
+    },
+  );
+  const snapshot = await telemetry.refresh(new Date(), { codexDesktopOpen: true });
+  assert.equal(snapshot.codexMainAgents, 0);
+  assert.equal(snapshot.codexSubagents, 0);
+  assert.equal(snapshot.codexActiveAgents, 0);
 });
 
 test("does not count an interrupted sidechat merely because its spawn edge remains open", async (t) => {

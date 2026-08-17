@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.8] - 2026-08-16
+
+- Keep the Windows tray and presence daemon alive with a lightweight supervisor that restarts unexpected exits without undoing an intentional Quit.
+- Discover Claude Deep Research workflows directly from their journals, including workflows that bypass Punchcard's parent lifecycle hooks.
+- Count hookless direct Claude subagents while excluding completed agents and abandoned stale work.
+- Add regression coverage for 36-agent Deep Research runs, direct Claude subagents, stale workflows, tray recovery, and clean Quit behavior.
+
+## [1.0.7] - 2026-08-14
+
+- Count Codex desktop side chats from real turn start/completion events instead of treating a selected tab as an active agent.
+
 ## [1.0.6] - 2026-08-14
 
 - Add an AppKit macOS menu-bar interface with all Punchcard settings and controls.
@@ -54,3 +65,5 @@ All notable Punchcard changes are documented here. The project follows [Semantic
 
 [1.0.0]: https://github.com/TheFysionX/punchcard/releases/tag/v1.0.0
 [1.0.6]: https://github.com/TheFysionX/punchcard/releases/tag/v1.0.6
+[1.0.7]: https://github.com/TheFysionX/punchcard/releases/tag/v1.0.7
+[1.0.8]: https://github.com/TheFysionX/punchcard/releases/tag/v1.0.8

@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 import { appPaths } from "../lib/paths.js";
 import { createPrivateDashboard } from "../lib/private-dashboard.js";
@@ -39,5 +42,45 @@ test("private dashboard requires its one-time ticket and serves signed stats onl
     assert.deepEqual(upstream, ["https://app.punchcardai.workers.dev/index.html"]);
   } finally {
     await dashboard.close();
+  }
+});
+
+test("private dashboard reports a fresh collector sync as setup pending", async () => {
+  const home = await fs.mkdtemp(path.join(os.tmpdir(), "punchcard-private-dashboard-"));
+  const paths = appPaths({ PUNCHCARD_HOME: home });
+  await fs.mkdir(path.join(paths.moreMetricsRoot, "data"), { recursive: true });
+  await fs.writeFile(path.join(paths.moreMetricsRoot, "data", "status.json"), JSON.stringify({
+    active: true,
+    state: "refreshing",
+    lastSyncedAt: null,
+  }));
+  const dashboard = await createPrivateDashboard(paths, {
+    username: "demo",
+    idleMs: 30_000,
+    fetchPrivateStats: async () => {
+      throw new Error("This device is not paired with a Punchcard profile.");
+    },
+  });
+  try {
+    const admitted = await fetch(dashboard.url, { redirect: "manual" });
+    const cookie = admitted.headers.get("set-cookie").split(";", 1)[0];
+    const stats = await fetch(`${dashboard.origin}/api/profiles/demo/stats?range=all`, { headers: { cookie } });
+    assert.equal(stats.status, 425);
+    assert.deepEqual(await stats.json(), {
+      code: "INSIGHTS_SETUP_PENDING",
+      error: "Punchcard is still setting up your private insights.",
+    });
+
+    await fs.writeFile(path.join(paths.moreMetricsRoot, "data", "status.json"), JSON.stringify({
+      active: true,
+      state: "synced",
+      lastSyncedAt: "2026-08-15T01:37:15.259Z",
+    }));
+    const failed = await fetch(`${dashboard.origin}/api/profiles/demo/stats?range=all`, { headers: { cookie } });
+    assert.equal(failed.status, 502);
+    assert.equal(await failed.text(), "This device is not paired with a Punchcard profile.");
+  } finally {
+    await dashboard.close();
+    await fs.rm(home, { recursive: true, force: true });
   }
 });

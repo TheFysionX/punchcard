@@ -1,6 +1,6 @@
-# macOS support
+# macOS support and final verification
 
-Punchcard supports macOS through a native AppKit menu-bar interface, user-level launchd integration, Discord Unix-socket discovery, and local Claude Code and Codex activity detection. The same `punchcard-presence` npm package supports Apple silicon and Intel Macs without a separate application bundle.
+Punchcard's macOS implementation is complete at the source, package, and CI-validation level. A real Mac is still required for the final visual and lifecycle verification because Windows cannot instantiate AppKit, inspect a live macOS GUI launchd domain, or connect to Discord's macOS Unix socket.
 
 ## Implemented behavior
 
@@ -24,11 +24,11 @@ Punchcard supports macOS through a native AppKit menu-bar interface, user-level 
 2. compiles `scripts/tray-macos.js` with `/usr/bin/osacompile -l JavaScript`;
 3. runs synthetic tests for launchctl lifecycle calls, clean-Quit semantics, paths containing spaces, App-bundle exclusions, terminal Claude/Codex processes, Codex database candidates, and npm prefix layouts.
 
-Together, these checks validate the packaged macOS source, generated launchd configuration, system-framework compilation, supported Node.js versions, and cross-platform lifecycle contracts.
+These are static and simulated checks. They deliberately do not claim that the menu appeared on a real display.
 
-## Operational verification checklist
+## Final real-Mac checklist
 
-Use this checklist when qualifying a new macOS, Discord, Node.js, Codex, or Claude Code release, or when troubleshooting an installation. Start from a standard macOS user account with Discord Desktop, Node.js 22 or newer, and the development tools you want Punchcard to detect.
+Use a disposable macOS user account with current Discord Desktop, Node.js 22 or newer, Codex, and Claude Code installed. Test Apple silicon first; repeat the install/start smoke test on Intel if Intel is a release requirement.
 
 ```sh
 npm install -g punchcard-presence

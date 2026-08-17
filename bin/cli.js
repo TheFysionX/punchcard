@@ -12,7 +12,7 @@ import { detectProcesses } from "../lib/processes.js";
 import { buildPresence } from "../lib/activity.js";
 import { addClaudeDesktopBackground, readClaudeActivity, recordClaudeHook, clearClaudeActivity } from "../lib/claude-activity.js";
 import { installClaudeHooks, removeClaudeHooks } from "../lib/claude-hooks.js";
-import { runTrayHost, runningTrayPid, startTrayDetached, stopTray } from "../lib/tray.js";
+import { requestTrayExit, runTrayHost, runningTrayPid, startTrayDetached, stopTray } from "../lib/tray.js";
 import { checkForUpdate, isValidVersion } from "../lib/updater.js";
 import { findNpmCli } from "../lib/npm-cli.js";
 import { platformSnapshot } from "../lib/platform.js";
@@ -367,6 +367,7 @@ switch (command) {
     console.log("Punchcard is off.");
     break;
   case "quit": {
+    await requestTrayExit(paths);
     await stopDaemon();
     if (!process.argv.includes("--from-tray")) await stopTray(paths);
     console.log("Punchcard closed. Start-at-login remains unchanged.");

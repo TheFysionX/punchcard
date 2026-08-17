@@ -38,11 +38,11 @@ Support for more ADEs is planned for the immediate future.
 ## Features
 
 - Discord Rich Presence for Codex, Claude, or both at once
-- Active agent count
+- Active main-task, sidechat, Claude workflow, Deep Research, and subagent count
 - Daily and weekly token usage
 - Optional profile link on the Discord token line
 - Automatic Discord reconnection
-- Native Windows tray or macOS menu-bar controls and login startup
+- Self-healing Windows tray and daemon, plus native macOS menu-bar controls and login startup
 - Local-first tracking of usage and activity
 
 ## Commands

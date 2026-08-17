@@ -21,7 +21,7 @@ Every 15 seconds the daemon refreshes local aggregate usage and active-agent sta
 - `bin/cli.js`: lifecycle commands and user-facing status.
 - `lib/usage.js`: token aggregation and Codex active-agent accounting.
 - `lib/codex-sidechats.js`: read-only Codex sidechat relationship lookup.
-- `lib/claude-activity.js` and `lib/claude-hooks.js`: Claude lifecycle markers and hook ownership.
+- `lib/claude-activity.js` and `lib/claude-hooks.js`: Claude lifecycle markers, hook-independent workflow journals, direct subagent state, and hook ownership.
 - `lib/processes.js`: in-memory process classification for Claude Desktop background work.
 - `lib/activity.js`: Discord text, image, and elapsed-time formatting.
 - `lib/discord-ipc.js`: local Discord IPC framing and reconnect behavior.
@@ -29,6 +29,7 @@ Every 15 seconds the daemon refreshes local aggregate usage and active-agent sta
 - `lib/logging.js`: capped error-only runtime logs.
 - `lib/updater.js`: read-only npm version lookup.
 - `lib/autostart.js`: Windows Run-key, macOS LaunchAgent, and Linux desktop-entry lifecycle.
+- `lib/tray.js`: tray lifecycle and Windows tray/daemon crash supervision.
 - `lib/platform.js`: sanitized platform and prerequisite diagnostics.
 - `lib/more-metrics.js`: explicit, separately installed optional extension boundary.
 - `scripts/tray.ps1`: Windows-only settings and status UI.
@@ -43,7 +44,7 @@ Every 15 seconds the daemon refreshes local aggregate usage and active-agent sta
 5. Core operation does not upload prompt or repository contents.
 6. Development tools, tests, and debug monitors are excluded from the npm tarball.
 7. User-owned Claude settings survive hook installation and removal; only Punchcard-tagged hooks are changed.
-8. macOS Quit exits cleanly without disabling login startup; launchd restarts crashes, not intentional exits.
+8. Quit exits cleanly without disabling login startup; Windows supervision and macOS launchd restart crashes, not intentional exits.
 
 ## Compatibility
 
